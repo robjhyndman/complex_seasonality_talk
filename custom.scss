@@ -1,0 +1,41 @@
+/*-- scss:defaults --*/
+
+// colors
+$body-bg: #f0f0f0 !default;
+$body-color: rgb(41, 31, 31);
+$link-color: #c14b14;
+$selection-bg: #0063a7 !default;
+$presentation-heading-color: #0063a7 !default;
+
+/*-- scss:rules --*/
+
+// Blockquotes white on orange with rounded corners
+.reveal .slide blockquote {
+  background-color: #c14b14;
+  color: #fff;
+  border-left: 0px;
+  padding: 20px;
+  -moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+}
+
+// Callout backgrounds
+div.callout-note.callout-style-default .callout-caption {
+  background-color: #a1b8c8 !important;
+}
+div.callout-warning.callout-style-default .callout-caption {
+  background-color: #c8ada1 !important;
+}
+div.callout-note.callout-style-default .callout-body {
+  font-size: 36px !important;
+}
+
+// Remove ugly lines in tables
+.reveal table td {
+  border-bottom: 0px;
+}
+
+// Big gap before author on front page
+p.author {
+  margin-top: 5em;
+}

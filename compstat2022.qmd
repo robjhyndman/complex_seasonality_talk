@@ -1,0 +1,64 @@
+---
+title: "Decomposing time series with complex seasonality"
+author: Rob J Hyndman
+institute: "<img src='figs/monash_bw.png' width='25%'>"
+abstract: "Time series data often contain a rich complexity of seasonal patterns. Time series that are observed at a sub-daily level can exhibit multiple seasonal patterns corresponding to different granularities such as hour-of-the-day, day-of-the-week or month-of-the-year. They can be nested (e.g., hour-of-the-day within day-of-the-week) and non-nested (e.g., day-of-the-year in both the Gregorian and Hijri calendars). I will discuss two new time series decomposition tools for handling seasonalities in time series data: MSTL and STR. These allow for multiple seasonal and cyclic components, covariates, seasonal patterns that may have non-integer periods, and seasonality with complex topology. They can be used for time series with any regular time index including hourly, daily, weekly, monthly or quarterly data, but tackle many more decomposition problems than other methods allow."
+time: 20 mins
+format:
+  revealjs:
+    slide-number: "c"
+    preview-links: auto
+    controls: true
+    theme: [default, custom.scss]
+---
+
+## Complex seasonality
+
+-   Multiple seasonal periods
+-   Non-integer seasonality
+-   Irregular seasonal topography
+
+> ???
+
+```{r}
+# Load packages needed later
+library(tidyverse)
+library(fpp3)
+library(stR)
+library(gt)
+library(fontawesome)
+# Colours to be viridis for continuous scales and Okabe for discrete scales
+options(
+  digits = 4,
+  ggplot2.continuous.colour="viridis",
+  ggplot2.continuous.fill = "viridis",
+  ggplot2.discrete.colour = c("#009E73", "#E69F00", "#56B4E9", "#F0E442","#CC79A7" ),
+  ggplot2.discrete.fill = c("#009E73", "#E69F00", "#56B4E9", "#F0E442","#CC79A7" )
+)
+ggplot2::theme_set(theme_get() + theme(text = element_text(family = 'Carlito')))
+```
+
+```{css}
+/* Adding here rather than in scss file to override an !important flag */
+div.callout-note {
+  border-left-color: #0063a7 !important;
+}
+div.callout-warning {
+  border-left-color: #c14b14 !important;
+}
+```
+
+## For more information
+
+ * Slides: [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
+ * Source files: [github.com/robjhyndman/str_talk](https://github.com/robjhyndman/complex_seasonality_talk)
+
+::: {.callout-note icon="false"}
+# Find me at:
+
+`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br>
+`r fa("twitter")` [@robjhyndman](https://twitter.com/robjhyndman)<br>
+`r fa("github")` [@robjhyndman](https://github.com/robjhyndman)<br>
+`r fa("envelope")` [rob.hyndman@monash.edu](rob.hyndman@monash.edu)
+
+:::
