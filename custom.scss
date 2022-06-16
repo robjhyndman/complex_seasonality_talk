@@ -39,3 +39,13 @@ div.callout-note.callout-style-default .callout-body {
 p.author {
   margin-top: 5em;
 }
+
+// Bigger code blocks
+.reveal pre.sourceCode code {
+  max-height: 600px;
+}
+
+// Class for tighter itemized lists
+.tightlist ul li, ol li {
+  margin-top: 0.2em !important;
+}

@@ -8,23 +8,18 @@ format:
   revealjs:
     slide-number: "c"
     preview-links: auto
+    fig-format: svg
     controls: true
     theme: [default, custom.scss]
 ---
 
 ## Complex seasonality
 
--   Multiple seasonal periods
--   Non-integer seasonality
--   Irregular seasonal topography
-
-> ???
-
 ```{r}
 # Load packages needed later
 library(tidyverse)
 library(fpp3)
-library(stR)
+#library(stR)
 library(gt)
 library(fontawesome)
 # Colours to be viridis for continuous scales and Okabe for discrete scales
@@ -48,17 +43,160 @@ div.callout-warning {
 }
 ```
 
+```{r}
+vic_elec |>
+  autoplot(Demand/1e3) +
+  labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
+```
+
+## Complex seasonality
+
+```{r}
+vic_elec |>
+  filter(Date >= "2014-01-01", Date <= "2014-03-31") |>
+  autoplot(Demand/1e3) +
+  labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
+```
+
+## Complex seasonality
+
+```{r}
+telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names=FALSE) |>
+  rename(Demand = X1) |>
+  mutate(Date = seq(as.Date("2000-01-01"),to=as.Date("2008-12-31"), by="1 day")) |>
+  as_tsibble(index=Date)
+telec |>
+  autoplot(Demand/1e3) +
+  labs(title = "Turkish daily electricity demand", y = "Demand (GW)")
+```
+
+## Complex seasonality
+
+```{r}
+us_gasoline |>
+  autoplot(Barrels) +
+  labs(title = "US finished motor gasoline product supplied", y = "Million barrels per day")
+```
+
+## Complex seasonality
+
+::: tightlist
+-   Multiple seasonal periods, not necessarily nested
+-   Non-integer seasonality
+-   Irregular seasonal topography
+-   Seasonality that depends on covariates
+:::
+
+> No existing decomposition method handles all of these.
+
+. . .
+
+::: {.callout-note icon="false"}
+# Two solutions
+
+1.  MSTL: For multiple integer seasonal periods.
+2.  STR: For all types of complex seasonality.
+:::
+
+# MSTL
+
+::: {.callout-note icon="false"}
+# &nbsp;
+* Kasun Bandara, Rob J Hyndman, Christoph Bergmeir (2022) MSTL: A Seasonal-Trend Decomposition Algorithm for Time Series with Multiple Seasonal Patterns. *International J Operational Research*, to appear. [robjhyndman.com/publications/mstl/](https://robjhyndman.com/publications/mstl/)
+
+* Implemented in R packages `forecast` and `fable`.
+:::
+
+
+## MSTL
+
+::: {layout-ncol=2}
+
+```{r mstl_elec, echo=TRUE, eval=FALSE}
+vic_elec |>
+  model(STL(Demand/1e3)) |>
+  components() |>
+  autoplot()
+```
+
+```{r mstl_elec_out, ref.label="mstl_elec", echo=FALSE}
+#| fig-height: 12
+```
+
+:::
+
+## MSTL
+
+$$y_t = S_t^1 + S_t^2 + \dots + S_t^n + R_t$$
+
+* $n=$ number of seasonalities in $y_t$
+* $S_t^i=$ seasonal component $i$
+* $R_t=$ remainder component
+
+## MSTL
+
+```{r, eval=FALSE, echo=TRUE}
+# X: time series object
+# iterate: number of  STL iterations
+# s.window: seasonal window values
+# seas.ids: vector of seasonal periods in increasing order
+
+seasonality <- matrix(0, nrow=nrow(X), ncol=length(seas.ids))
+deseas <- X
+for (j in 1:iterate) {
+  for (i in 1:length(seas.ids)) {
+    deseas <- deseas + seasonality[,i]
+    fit <- model(
+        STL(deseas ~ season(period = seas.ids[i], window = s.win[i]))
+      ) %>%
+      components()
+    seasonality[,i] <- fit$season
+    deseas <- deseas - seasonality[,i]
+  }
+}
+trend <- fit$trend
+remainder <- deseas - trend
+return(trend, remainder, seasonality)
+```
+
+## MSTL
+
+### fable syntax
+
+```r
+tsibble |>
+  model(STL(variable) ~ season(period = a, window = b) +
+                        season(period = c, window = d))
+```
+
+<br><br><br>
+
+### forecast syntax
+
+```r
+vector |>
+  msts(seasonal.periods = c(a, c)) |>
+  mstl(s.window = c(b, d))
+```
+
+
+# STR
+
+::: {.callout-note icon="false"}
+# &nbsp;
+* Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, to appear. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
+
+* Implemented in R package `stR`.
+:::
+
+
 ## For more information
 
- * Slides: [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
- * Source files: [github.com/robjhyndman/str_talk](https://github.com/robjhyndman/complex_seasonality_talk)
+-   Slides: [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
+-   Source files: [github.com/robjhyndman/str_talk](https://github.com/robjhyndman/complex_seasonality_talk)
 
 ::: {.callout-note icon="false"}
 # Find me at:
 
-`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br>
-`r fa("twitter")` [@robjhyndman](https://twitter.com/robjhyndman)<br>
-`r fa("github")` [@robjhyndman](https://github.com/robjhyndman)<br>
-`r fa("envelope")` [rob.hyndman@monash.edu](rob.hyndman@monash.edu)
-
+`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br> `r fa("twitter")` [\@robjhyndman](https://twitter.com/robjhyndman)<br> `r fa("github")` [\@robjhyndman](https://github.com/robjhyndman)<br> `r fa("envelope")` [rob.hyndman\@monash.edu](rob.hyndman@monash.edu)
 :::
