@@ -31,6 +31,33 @@ options(
   ggplot2.discrete.fill = c("#009E73", "#E69F00", "#56B4E9", "#F0E442","#CC79A7" )
 )
 ggplot2::theme_set(theme_get() + theme(text = element_text(family = 'Carlito')))
+
+velec <- vic_elec
+minute(velec$Time) <- 0
+velec <- velec %>%
+  group_by(Time) %>%
+  summarise(
+    Date = min(Date),
+    Demand = sum(Demand)/1e3,
+    Temperature = mean(Temperature),
+    Holiday = any(Holiday),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Period = as.numeric(Time - as_datetime(Date))/3600 + 12,
+    Weekday = factor(weekdays(Date, abbreviate = TRUE),
+      levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    ),
+    WorkingDay = !Holiday & Weekday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"),
+    DailySeasonality = Period - 1,
+    WeeklySeasonality = (as.integer(Weekday) - 1) * 48 + DailySeasonality,
+    WorkingDay = !Holiday & Weekday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"),
+    WDSeasonality = (DailySeasonality + (!WorkingDay) * 100),
+  ) %>%
+  rename(DateTime = Time) %>%
+  select(-Period) %>%
+  select(DateTime, Date, Demand, everything()) %>%
+  as_tsibble(index=DateTime)
 ```
 
 ```{css}
@@ -44,17 +71,17 @@ div.callout-warning {
 ```
 
 ```{r}
-vic_elec |>
-  autoplot(Demand/1e3) +
+velec |>
+  autoplot(Demand) +
   labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
 ```
 
 ## Complex seasonality
 
 ```{r}
-vic_elec |>
+velec |>
   filter(Date >= "2014-01-01", Date <= "2014-03-31") |>
-  autoplot(Demand/1e3) +
+  autoplot(Demand) +
   labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
 ```
 
@@ -101,37 +128,38 @@ us_gasoline |>
 # MSTL
 
 ::: {.callout-note icon="false"}
-# &nbsp;
-* Kasun Bandara, Rob J Hyndman, Christoph Bergmeir (2022) MSTL: A Seasonal-Trend Decomposition Algorithm for Time Series with Multiple Seasonal Patterns. *International J Operational Research*, to appear. [robjhyndman.com/publications/mstl/](https://robjhyndman.com/publications/mstl/)
+#  
 
-* Implemented in R packages `forecast` and `fable`.
+-   Kasun Bandara, Rob J Hyndman, Christoph Bergmeir (2022) MSTL: A Seasonal-Trend Decomposition Algorithm for Time Series with Multiple Seasonal Patterns. *International J Operational Research*, to appear. [robjhyndman.com/publications/mstl/](https://robjhyndman.com/publications/mstl/)
+
+-   Implemented in R packages `forecast` and `fable`.
 :::
-
 
 ## MSTL
 
-::: {layout-ncol=2}
-
+::: {layout-ncol="2"}
 ```{r mstl_elec, echo=TRUE, eval=FALSE}
-vic_elec |>
-  model(STL(Demand/1e3)) |>
+velec |>
+  model(STL(Demand)) |>
   components() |>
   autoplot()
 ```
 
+::: {.shiftup}
 ```{r mstl_elec_out, ref.label="mstl_elec", echo=FALSE}
-#| fig-height: 12
+#| fig-height: 7.5
+#| fig-width: 6
 ```
-
+:::
 :::
 
 ## MSTL
 
 $$y_t = S_t^1 + S_t^2 + \dots + S_t^n + R_t$$
 
-* $n=$ number of seasonalities in $y_t$
-* $S_t^i=$ seasonal component $i$
-* $R_t=$ remainder component
+-   $n=$ number of seasonalities in $y_t$
+-   $S_t^i=$ seasonal component $i$
+-   $R_t=$ remainder component
 
 ## MSTL
 
@@ -163,32 +191,191 @@ return(trend, remainder, seasonality)
 
 ### fable syntax
 
-```r
+``` r
 tsibble |>
   model(STL(variable) ~ season(period = a, window = b) +
                         season(period = c, window = d))
 ```
 
-<br><br><br>
+<br><br>
 
 ### forecast syntax
 
-```r
+``` r
 vector |>
   msts(seasonal.periods = c(a, c)) |>
   mstl(s.window = c(b, d))
 ```
 
-
 # STR
 
 ::: {.callout-note icon="false"}
-# &nbsp;
-* Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, to appear. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
+#  
 
-* Implemented in R package `stR`.
+-   Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, to appear. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
+
+-   Implemented in R package `stR`.
 :::
 
+## STR
+
+```{r}
+library(stR)
+velec_msts <- velec$Demand %>%
+  forecast::msts(start = 2012, seasonal.periods=c(24, 24*7, 24*365))
+decomp <- AutoSTR(velec_msts, confidence = 0.95)#, gapCV = 12, reltol = 0.00001)
+
+as_tsibble(decomp$input$data) %>%
+  rename(Demand = value) %>%
+  mutate(
+    Remainder = decomp$output$random$data,
+    Trend = predictor_dist(decomp$output$predictors[[1]], 95),
+    Season = predictor_dist(decomp$output$predictors[[2]], 95)
+  ) %>%
+  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Trend + Season + Remainder), method = "STR") %>%
+  autoplot(size = 0.5, fill = "blue", level = 95) +
+  theme(legend.position = "none") +
+  xlab("Month") +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+## STR
+
+```{r eval=FALSE}
+
+## Electricity data
+# Read and join all data sets
+
+
+# Set up predictors for STR
+Predictors <- list()
+Predictors$Trend <- list(
+  name = "Trend",
+  data = rep(1, NROW(elec)),
+  times = elec$Time,
+  seasons = rep(1, NROW(elec)),
+  timeKnots = seq(from = first(elec$Time), to = last(elec$Time), length.out = 116),
+  seasonalStructure = list(segments = list(c(0, 1)), sKnots = list(c(1, 0))),
+  lambdas = c(1500, 0, 0)
+)
+Predictors$WSeason <- list(
+  name = "Weekly seas",
+  data = rep(1, NROW(elec)),
+  times = elec$Time,
+  seasons = elec$WeeklySeasonality,
+  timeKnots = seq(from = first(elec$Time), to = last(elec$Time), length.out = 12),
+  seasonalStructure = list(segments = list(c(0, 336)), sKnots = c(as.list(seq(4, 332, 4)), list(c(336, 0)))),
+  lambdas = c(0.8, 0.6, 100)
+)
+Predictors$WDSeason <- list(
+  name = "Daily seas",
+  data = rep(1, NROW(elec)),
+  times = elec$Time,
+  seasons = elec$WDSeasonality,
+  timeKnots = seq(from = first(elec$Time), to = last(elec$Time), length.out = 24),
+  seasonalStructure = list(
+    segments = list(c(0, 48), c(100, 148)),
+    sKnots = c(as.list(c(1:47, 101:147)), list(c(0, 48, 100, 148)))
+  ),
+  lambdas = c(0.003, 0, 240)
+)
+Predictors$TrendTempM <- list(
+  name = "Trend temp",
+  data = elec$Temp,
+  times = elec$Time,
+  seasons = rep(1, NROW(elec)),
+  timeKnots = Predictors$Trend$timeKnots,
+  seasonalStructure = Predictors$Trend$seasonalStructure,
+  lambdas = c(1e7, 0, 0)
+)
+Predictors$TrendTempM2 <- list(
+  name = "Trend temp^2",
+  data = elec$Temp^2,
+  times = elec$Time,
+  seasons = rep(1, NROW(elec)),
+  timeKnots = Predictors$Trend$timeKnots,
+  seasonalStructure = Predictors$Trend$seasonalStructure,
+  lambdas = c(1e7, 0, 0)
+)
+
+# STR decomposition of electricity data
+elec_str <- STR(
+  data = elec$Demand,
+  predictors = Predictors,
+  confidence = 0.95, gapCV = 48 * 7
+)
+
+# Find outliers
+elec <- elec %>%
+  mutate(res = elec_str$output$random$data)
+outliers <- elec %>%
+  filter(abs(res) >= sort(abs(elec$res))[NROW(elec) - 10 + 1])
+
+## Plot STR decomposition of electricity data
+
+elec_dbl <- elec %>%
+  as_tsibble(index = DateTime) %>%
+  mutate(
+    Remainder = elec_str$output$random$data,
+    Trend = predictor_dist(elec_str$output$predictors[[1]], 95),
+    Weekly = predictor_dist(elec_str$output$predictors[[2]], 95),
+    Daily = predictor_dist(elec_str$output$predictors[[3]], 95),
+    Temp = predictor_dist(elec_str$output$predictors[[4]], 95),
+    Tempsq = predictor_dist(elec_str$output$predictors[[5]], 95),
+  ) %>%
+  select(DateTime, Demand, Trend, Weekly, Daily, Temp, Tempsq, Remainder) %>%
+  as_dable(
+    response = "Demand",
+    aliases = rlang::exprs(Demand = Trend + Weekly + Daily + Temp + Tempsq + Remainder),
+    method = "STR"
+  )
+p <- elec_dbl %>%
+  autoplot(size = 0.5, fill = "blue", level = 95) +
+  xlab("Month") +
+  geom_vline(data = outliers, aes(xintercept = DateTime), col = "gray") +
+  ggplot2::theme_bw() + theme(legend.position = "none")
+# Put vline behind data
+p$layers <- p$layers[c(1, 4, 2, 3)]
+p
+
+
+
+## Display table of outliers
+outliers %>%
+  mutate(
+    Hour1 = hour(DateTime),
+    Hour2 = hour(DateTime + 1800),
+    Minute1 = minute(DateTime) %>% as.character(),
+    Minute2 = minute(DateTime + 1800) %>% as.character(),
+    Minute1 = if_else(Minute1 == "0", "00", Minute1),
+    Minute2 = if_else(Minute2 == "0", "00", Minute2),
+    Time = paste0(Hour1, ":", Minute1, " -- ", Hour2, ":", Minute2),
+    Weekday = case_when(
+      Weekday == "Thu" ~ "Thursday",
+      Weekday == "Fri" ~ "Friday"
+    ),
+    Date = paste(day(Date), month(Date, label = TRUE, abbr = FALSE), year(Date)),
+  ) %>%
+  select(Date, Weekday, Time, res) %>%
+  knitr::kable(
+    format='latex',
+    col.names = c("Date", "Day of week", "Time period", "Residual"),
+    digits = 1, align = "rlcr", booktabs = TRUE, linesep=10,
+    position="!bh",
+    caption = "The ten residuals that are largest in absolute value after an STR decomposition."
+  )
+
+
+## Temperature plot highlighting outliers
+elec %>%
+  filter(Date >= "2000-02-01", Date <= "2000-02-11") %>%
+  ggplot(aes(x = DateTime, y = Temp)) +
+  geom_line() +
+  geom_vline(data = outliers, aes(xintercept = DateTime), col = "red") +
+  labs(y = "Temperature", x = "Date") +
+  ggplot2::theme_bw()
+```
 
 ## For more information
 

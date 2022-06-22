@@ -30,6 +30,11 @@ div.callout-note.callout-style-default .callout-body {
   font-size: 36px !important;
 }
 
+// headers
+.reveal h3 {
+  color: #c14b14;
+}
+
 // Remove ugly lines in tables
 .reveal table td {
   border-bottom: 0px;
@@ -37,7 +42,7 @@ div.callout-note.callout-style-default .callout-body {
 
 // Big gap before author on front page
 p.author {
-  margin-top: 5em;
+  margin-top: 2em;
 }
 
 // Bigger code blocks
@@ -48,4 +53,11 @@ p.author {
 // Class for tighter itemized lists
 .tightlist ul li, ol li {
   margin-top: 0.2em !important;
+}
+
+.shiftup img {
+  margin: 0;
+}
+.shiftup p {
+  margin: 0;
 }

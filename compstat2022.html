@@ -470,13 +470,15 @@ div.callout-warning {
 <div class="quarto-layout-row quarto-layout-valign-top">
 <div class="cell quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>vic_elec <span class="sc">|&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">model</span>(<span class="fu">STL</span>(Demand<span class="sc">/</span><span class="fl">1e3</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">model</span>(<span class="fu">STL</span>(Demand)) <span class="sc">|&gt;</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">components</span>() <span class="sc">|&gt;</span></span>
 <span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div class="shiftup quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div class="cell">
 <div class="cell-output-display">
 <p><img data-src="compstat2022_files/figure-revealjs/mstl_elec_out-1.svg"></p>
+</div>
 </div>
 </div>
 </div>
@@ -499,17 +501,17 @@ div.callout-warning {
 <span id="cb2-3"><a href="#cb2-3"></a><span class="co"># s.window: seasonal window values</span></span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="co"># seas.ids: vector of seasonal periods in increasing order</span></span>
 <span id="cb2-5"><a href="#cb2-5"></a></span>
-<span id="cb2-6"><a href="#cb2-6"></a>seasonality <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(seas.ids)))</span>
+<span id="cb2-6"><a href="#cb2-6"></a>seasonality <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow=</span><span class="fu">nrow</span>(X), <span class="at">ncol=</span><span class="fu">length</span>(seas.ids))</span>
 <span id="cb2-7"><a href="#cb2-7"></a>deseas <span class="ot">&lt;-</span> X</span>
 <span id="cb2-8"><a href="#cb2-8"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>iterate) {</span>
 <span id="cb2-9"><a href="#cb2-9"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(seas.ids)) {</span>
-<span id="cb2-10"><a href="#cb2-10"></a>    deseas <span class="ot">&lt;-</span> deseas <span class="sc">+</span> seasonality[[i]]</span>
+<span id="cb2-10"><a href="#cb2-10"></a>    deseas <span class="ot">&lt;-</span> deseas <span class="sc">+</span> seasonality[,i]</span>
 <span id="cb2-11"><a href="#cb2-11"></a>    fit <span class="ot">&lt;-</span> <span class="fu">model</span>(</span>
 <span id="cb2-12"><a href="#cb2-12"></a>        <span class="fu">STL</span>(deseas <span class="sc">~</span> <span class="fu">season</span>(<span class="at">period =</span> seas.ids[i], <span class="at">window =</span> s.win[i]))</span>
 <span id="cb2-13"><a href="#cb2-13"></a>      ) <span class="sc">%&gt;%</span></span>
 <span id="cb2-14"><a href="#cb2-14"></a>      <span class="fu">components</span>()</span>
-<span id="cb2-15"><a href="#cb2-15"></a>    seasonality[[i]] <span class="ot">&lt;-</span> fit<span class="sc">$</span>season</span>
-<span id="cb2-16"><a href="#cb2-16"></a>    deseas <span class="ot">&lt;-</span> deseas <span class="sc">-</span> seasonality[[i]]</span>
+<span id="cb2-15"><a href="#cb2-15"></a>    seasonality[,i] <span class="ot">&lt;-</span> fit<span class="sc">$</span>season</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    deseas <span class="ot">&lt;-</span> deseas <span class="sc">-</span> seasonality[,i]</span>
 <span id="cb2-17"><a href="#cb2-17"></a>  }</span>
 <span id="cb2-18"><a href="#cb2-18"></a>}</span>
 <span id="cb2-19"><a href="#cb2-19"></a>trend <span class="ot">&lt;-</span> fit<span class="sc">$</span>trend</span>
@@ -523,7 +525,7 @@ div.callout-warning {
 <div class="sourceCode" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>tsibble <span class="sc">|&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">model</span>(<span class="fu">STL</span>(variable) <span class="sc">~</span> <span class="fu">season</span>(<span class="at">period =</span> a, <span class="at">window =</span> b) <span class="sc">+</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>                        <span class="fu">season</span>(<span class="at">period =</span> c, <span class="at">window =</span> d))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><br><br><br></p>
+<p><br><br></p>
 <h3 id="forecast-syntax">forecast syntax</h3>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>vector <span class="sc">|&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>  <span class="fu">msts</span>(<span class="at">seasonal.periods =</span> <span class="fu">c</span>(a, c)) <span class="sc">|&gt;</span></span>
