@@ -106,6 +106,13 @@ us_gasoline |>
   labs(title = "US finished motor gasoline product supplied", y = "Million barrels per day")
 ```
 
+
+## Complex seasonal topology
+
+#### Example: hourly data
+
+![](figs/topology.png)
+
 ## Complex seasonality
 
 ::: tightlist
@@ -113,6 +120,7 @@ us_gasoline |>
 -   Non-integer seasonality
 -   Irregular seasonal topography
 -   Seasonality that depends on covariates
+-   Complex seasonal topology
 :::
 
 > No existing decomposition method handles all of these.
@@ -129,7 +137,7 @@ us_gasoline |>
 # MSTL
 
 ::: {.callout-note icon="false"}
-#  
+# &nbsp;
 
 -   Kasun Bandara, Rob J Hyndman, Christoph Bergmeir (2022) MSTL: A Seasonal-Trend Decomposition Algorithm for Time Series with Multiple Seasonal Patterns. *International J Operational Research*, to appear. [robjhyndman.com/publications/mstl/](https://robjhyndman.com/publications/mstl/)
 
@@ -156,10 +164,11 @@ velec |>
 
 ## MSTL
 
-$$y_t = S_t^1 + S_t^2 + \dots + S_t^n + R_t$$
+$$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
 
--   $n=$ number of seasonalities in $y_t$
--   $S_t^i=$ seasonal component $i$
+-   $I=$ number of seasonalities in $y_t$
+-   $T_t=$ smooth trend component
+-   $S_t^{(i)}=$ seasonal component $i$
 -   $R_t=$ remainder component
 
 ## MSTL
