@@ -26,12 +26,12 @@ library(fontawesome)
 # Colours to be viridis for continuous scales and Okabe for discrete scales
 options(
   digits = 4,
-  ggplot2.continuous.colour="viridis",
+  ggplot2.continuous.colour = "viridis",
   ggplot2.continuous.fill = "viridis",
-  ggplot2.discrete.colour = c("#009E73", "#E69F00", "#56B4E9", "#F0E442","#CC79A7" ),
-  ggplot2.discrete.fill = c("#009E73", "#E69F00", "#56B4E9", "#F0E442","#CC79A7" )
+  ggplot2.discrete.colour = c("#009E73", "#E69F00", "#56B4E9", "#F0E442", "#CC79A7"),
+  ggplot2.discrete.fill = c("#009E73", "#E69F00", "#56B4E9", "#F0E442", "#CC79A7")
 )
-ggplot2::theme_set(theme_get() + theme(text = element_text(family = 'Carlito')))
+ggplot2::theme_set(theme_get() + theme(text = element_text(family = "Carlito")))
 
 # Set up Victorian Electricity data set
 source("velec.R")
@@ -50,7 +50,7 @@ div.callout-warning {
 ```{r}
 velec |>
   autoplot(Demand) +
-  labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
+  labs(title = "Victorian half-hourly electricity demand", y = "Demand (GW)")
 ```
 
 ## Complex seasonality
@@ -59,16 +59,16 @@ velec |>
 velec |>
   filter(Date >= "2014-01-01", Date <= "2014-03-31") |>
   autoplot(Demand) +
-  labs(title = "Victorian half-hourly electricity demand", y="Demand (GW)")
+  labs(title = "Victorian half-hourly electricity demand", y = "Demand (GW)")
 ```
 
 ## Complex seasonality
 
 ```{r}
-telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names=FALSE) |>
+telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names = FALSE) |>
   rename(Demand = X1) |>
-  mutate(Date = seq(as.Date("2000-01-01"),to=as.Date("2008-12-31"), by="1 day")) |>
-  as_tsibble(index=Date)
+  mutate(Date = seq(as.Date("2000-01-01"), to = as.Date("2008-12-31"), by = "1 day")) |>
+  as_tsibble(index = Date)
 telec |>
   autoplot(Demand/1e3) +
   labs(title = "Turkish daily electricity demand", y = "Demand (GW)")
@@ -155,17 +155,17 @@ $$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
 # s.window: seasonal window values
 # seas.ids: vector of seasonal periods in increasing order
 
-seasonality <- matrix(0, nrow=nrow(X), ncol=length(seas.ids))
+seasonality <- matrix(0, nrow = nrow(X), ncol = length(seas.ids))
 deseas <- X
 for (j in 1:iterate) {
   for (i in 1:length(seas.ids)) {
-    deseas <- deseas + seasonality[,i]
+    deseas <- deseas + seasonality[, i]
     fit <- model(
-        STL(deseas ~ season(period = seas.ids[i], window = s.win[i]))
-      ) %>%
+      STL(deseas ~ season(period = seas.ids[i], window = s.win[i]))
+    ) %>%
       components()
-    seasonality[,i] <- fit$season
-    deseas <- deseas - seasonality[,i]
+    seasonality[, i] <- fit$season
+    deseas <- deseas - seasonality[, i]
   }
 }
 trend <- fit$trend
@@ -240,18 +240,23 @@ library(rgl)
 #| scroll: false
 # 2d seasonal surface
 knot <- cylinder3d(
-      center = cbind(1:14,0,0),
-      radius = 3,
-      closed = FALSE)
+  center = cbind(1:14, 0, 0),
+  radius = 3,
+  closed = FALSE
+)
 shade3d(addNormals(subdivision3d(knot, depth = 2)), col = "#0063a7")
-x <- seq(1,14,l=500)
-lines3d(x=x, y=3*sin(2*pi*x/7), z=3*cos(2*pi*x/7), lwd=4, color="#c14b14")
-axis3d(edge="x", at=seq(1.5,13.5,l=14), labels=1:14)
-text3d(x=12, y=-4, z=-4, texts="time t")
-text3d(x=-4, y=0, z=0, texts="season k")
-text3d(x=0, y=3*sin(2*pi*(1:7)/7), z=3*cos(2*pi*(1:7)/7), texts=c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))
-text3d(x=1:14, y=3.3*sin(2*pi*(1:14)/7), z=3.3*cos(2*pi*(1:14)/7), texts= rep(c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"),2), col="#c14b14", usePlotmath=TRUE)
-rglwidget(height=360)
+x <- seq(1, 14, l = 500)
+lines3d(x = x, y = 3 * sin(2 * pi * x/7), z = 3 * cos(2 * pi * x/7), 
+        lwd = 4, color = "#c14b14")
+axis3d(edge = "x", at = seq(1.5, 13.5, l = 14), labels = 1:14)
+text3d(x = 12, y = -4, z = -4, texts = "time t")
+text3d(x = -4, y = 0, z = 0, texts = "season k")
+text3d(x = 0, y = 3 * sin(2 * pi * (1:7)/7), z = 3 * cos(2 * pi * (1:7)/7), 
+       texts = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+text3d(x = 1:14, y = 3.3 * sin(2 * pi * (1:14)/7), z = 3.3 * cos(2 * pi * (1:14)/7), 
+       texts = rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 2), 
+       col = "#c14b14", usePlotmath = TRUE)
+rglwidget(height = 360)
 ```
 
   * $m_i=$ number of "seasons" in $S^{(i)}_{t}$.
@@ -291,16 +296,17 @@ Minimize wrt $\bm{\Phi}$, $\bm{\ell}$ and $\bm{s}_i$:
 
 ::: smallequations
 \begin{align*}
-  -\log \mathcal{L} &=
-  \frac{1}{2\sigma_R}
+  -\log \mathcal{L} &= \frac{1}{2\sigma_R}
   \Bigg\{
-    \Big\|\bm{y}- \sum_{i=1}^I \bm{Q}_i\bm{s}_i - \bm{\ell} -
-    \bm{Z}\bm{\Phi}
-     \Big\|_{L_2}^2  + \lambda_\ell\Big\|\bm{D}_\ell \bm{\ell}\Big\|_{L_2}^2 \\
+    \Big\|
+      \bm{y}- \sum_{i=1}^I \bm{Q}_i\bm{s}_i - \bm{\ell} - \bm{Z}\bm{\Phi}
+    \Big\|_{L_2}^2  + 
+    \lambda_\ell\Big\|\bm{D}_\ell \bm{\ell}\Big\|_{L_2}^2 \\
   & \hspace*{1cm} + \sum_{i=1}^{I}\left(
-                  \left\|\lambda_{tt,i} \bm{D}_{tt,i} \bm{s}_i \right\|_{L_2}^2 +
-                  \left\|\lambda_{st,i} \bm{D}_{st,i} \bm{s}_i \right\|_{L_2}^2 +
-                  \left\|\lambda_{ss,i} \bm{D}_{ss,i} \bm{s}_i \right\|_{L_2}^2 \right)
+      \left\|\lambda_{tt,i} \bm{D}_{tt,i} \bm{s}_i \right\|_{L_2}^2 +
+      \left\|\lambda_{st,i} \bm{D}_{st,i} \bm{s}_i \right\|_{L_2}^2 +
+      \left\|\lambda_{ss,i} \bm{D}_{ss,i} \bm{s}_i \right\|_{L_2}^2 
+    \right)
   \Bigg\}
 \end{align*}
 :::
@@ -347,7 +353,7 @@ as_tsibble(velec_str$input$data) %>%
   mutate(
     Remainder = velec_str$output$random$data,
     Trend = predictor_dist(velec_str$output$predictors[[1]], 95),
-    Season_year = predictor_dist(velec_str$output$predictors[[4]], 95)
+    Season_year = predictor_dist(velec_str$output$predictors[[4]], 95),
     Season_week = predictor_dist(velec_str$output$predictors[[3]], 95),
     Season_day = predictor_dist(velec_str$output$predictors[[2]], 95),
   ) %>%
