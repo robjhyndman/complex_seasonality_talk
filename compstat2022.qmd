@@ -11,6 +11,7 @@ format:
     fig-format: svg
     controls: true
     theme: [default, custom.scss]
+    html-math-method: katex
 ---
 
 ## Complex seasonality
