@@ -19,6 +19,7 @@ format:
 ```{r}
 # Load packages needed later
 library(tidyverse)
+library(dygraphs)
 library(fpp3)
 library(gt)
 library(fontawesome)
@@ -49,17 +50,11 @@ div.callout-warning {
 
 ```{r}
 velec |>
-  autoplot(Demand) +
-  labs(title = "Victorian half-hourly electricity demand", y = "Demand (GW)")
-```
-
-## Complex seasonality
-
-```{r}
-velec |>
-  filter(Date >= "2014-01-01", Date <= "2014-03-31") |>
-  autoplot(Demand) +
-  labs(title = "Victorian half-hourly electricity demand", y = "Demand (GW)")
+  select(DateTime, Demand) |>
+  tsbox::ts_xts() |>
+  dygraph(main = "Victorian half-hourly electricity demand", ylab = "Demand (GW)") |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
 ```
 
 ## Complex seasonality
@@ -67,19 +62,26 @@ velec |>
 ```{r}
 telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names = FALSE) |>
   rename(Demand = X1) |>
-  mutate(Date = seq(as.Date("2000-01-01"), to = as.Date("2008-12-31"), by = "1 day")) |>
+  mutate(
+    Date = seq(as.Date("2000-01-01"), to = as.Date("2008-12-31"), by = "1 day"),
+    Demand = Demand/1e3
+  ) |>
   as_tsibble(index = Date)
 telec |>
-  autoplot(Demand/1e3) +
-  labs(title = "Turkish daily electricity demand", y = "Demand (GW)")
+  tsbox::ts_xts() |>
+  dygraph(main = "Turkish daily electricity demand", y = "Demand (GW)") |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
 ```
 
 ## Complex seasonality
 
 ```{r}
 us_gasoline |>
-  autoplot(Barrels) +
-  labs(title = "US finished motor gasoline product supplied", y = "Million barrels per day")
+  tsbox::ts_xts() |>
+  dygraph(main = "US finished motor gasoline product supplied", y = "Million barrels per day") |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
 ```
 
 
@@ -236,8 +238,6 @@ library(rgl)
 ```
 
 ```{r, test-rgl, webgl=TRUE}
-#| fig-height: 3.7
-#| scroll: false
 # 2d seasonal surface
 knot <- cylinder3d(
   center = cbind(1:14, 0, 0),
@@ -246,15 +246,15 @@ knot <- cylinder3d(
 )
 shade3d(addNormals(subdivision3d(knot, depth = 2)), col = "#0063a7")
 x <- seq(1, 14, l = 500)
-lines3d(x = x, y = 3 * sin(2 * pi * x/7), z = 3 * cos(2 * pi * x/7), 
+lines3d(x = x, y = 3 * sin(2 * pi * x/7), z = 3 * cos(2 * pi * x/7),
         lwd = 4, color = "#c14b14")
 axis3d(edge = "x", at = seq(1.5, 13.5, l = 14), labels = 1:14)
 text3d(x = 12, y = -4, z = -4, texts = "time t")
 text3d(x = -4, y = 0, z = 0, texts = "season k")
-text3d(x = 0, y = 3 * sin(2 * pi * (1:7)/7), z = 3 * cos(2 * pi * (1:7)/7), 
+text3d(x = 0, y = 3 * sin(2 * pi * (1:7)/7), z = 3 * cos(2 * pi * (1:7)/7),
        texts = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
-text3d(x = 1:14, y = 3.3 * sin(2 * pi * (1:14)/7), z = 3.3 * cos(2 * pi * (1:14)/7), 
-       texts = rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 2), 
+text3d(x = 1:14, y = 3.3 * sin(2 * pi * (1:14)/7), z = 3.3 * cos(2 * pi * (1:14)/7),
+       texts = rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 2),
        col = "#c14b14", usePlotmath = TRUE)
 rglwidget(height = 360)
 ```
@@ -300,12 +300,12 @@ Minimize wrt $\bm{\Phi}$, $\bm{\ell}$ and $\bm{s}_i$:
   \Bigg\{
     \Big\|
       \bm{y}- \sum_{i=1}^I \bm{Q}_i\bm{s}_i - \bm{\ell} - \bm{Z}\bm{\Phi}
-    \Big\|_{L_2}^2  + 
+    \Big\|_{L_2}^2  +
     \lambda_\ell\Big\|\bm{D}_\ell \bm{\ell}\Big\|_{L_2}^2 \\
   & \hspace*{1cm} + \sum_{i=1}^{I}\left(
       \left\|\lambda_{tt,i} \bm{D}_{tt,i} \bm{s}_i \right\|_{L_2}^2 +
       \left\|\lambda_{st,i} \bm{D}_{st,i} \bm{s}_i \right\|_{L_2}^2 +
-      \left\|\lambda_{ss,i} \bm{D}_{ss,i} \bm{s}_i \right\|_{L_2}^2 
+      \left\|\lambda_{ss,i} \bm{D}_{ss,i} \bm{s}_i \right\|_{L_2}^2
     \right)
   \Bigg\}
 \end{align*}
@@ -342,12 +342,12 @@ $\bm{X} =
 
 ## STR
 
-```{r}
+```{r, eval=FALSE}
 # Fit basic STR model
 source("velec_str.R")
 ```
 
-```{r}
+```{r, eval=FALSE}
 as_tsibble(velec_str$input$data) %>%
   rename(Demand = value) %>%
   mutate(
