@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.0",
+    "Version": "4.2.1",
     "Repositories": [
       {
         "Name": "REPO_NAME",
@@ -481,14 +481,14 @@
       "Package": "fabletools",
       "Version": "0.3.2.9000",
       "Source": "GitHub",
-      "RemoteType": "github",
       "Remotes": "mitchelloharawild/distributional",
+      "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "fabletools",
       "RemoteUsername": "tidyverts",
       "RemoteRef": "HEAD",
       "RemoteSha": "9794d225a37e79aaab18655692eca54bb3e1aed7",
-      "Hash": "71d9280e508b68f2f14bfbaac61a72f2",
+      "Hash": "f7f818acf81d61c7795ddfe01671bd54",
       "Requirements": [
         "R6",
         "distributional",
@@ -1552,6 +1552,17 @@
       "Hash": "e7b654da5e77bc4e5435a966329cd25f",
       "Requirements": [
         "xfun"
+      ]
+    },
+    "tsbox": {
+      "Package": "tsbox",
+      "Version": "0.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6452e79b1ea5c78bdc9e31c12667591f",
+      "Requirements": [
+        "anytime",
+        "data.table"
       ]
     },
     "tseries": {
