@@ -25,7 +25,7 @@ velec <- velec %>%
     ),
     WorkingDay = !Holiday & Weekday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"),
     DailySeasonality = as.numeric(Time - as_datetime(Date))/3600 + 11,
-    WeeklySeasonality = (as.integer(Weekday) - 1) * 48 + DailySeasonality,
+    WeeklySeasonality = (as.integer(Weekday) - 1) * 24 + DailySeasonality,
     WorkingDay = !Holiday & Weekday %in% c("Mon", "Tue", "Wed", "Thu", "Fri"),
     WDSeasonality = (DailySeasonality + (!WorkingDay) * 100),
   ) %>%
