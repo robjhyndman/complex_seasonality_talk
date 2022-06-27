@@ -16,7 +16,7 @@ predictor_dist <- function(x, level) {
 if(file.exists("velec_str.rds")) {
   velec_str <- readRDS("velec_str.rds")
 } else {
-  velec_str <- AutoSTR(velec_msts, confidence = 0.95, gapCV = 24 * 7)
+  velec_str <- AutoSTR(velec_msts, gapCV = 24 * 7)
   saveRDS(velec_str, "velec_str.rds")
 }
 
@@ -76,7 +76,7 @@ Predictors$TrendTempM2 <- list(
 velec_str_x <- STR(
   data = velec$Demand,
   predictors = Predictors,
-  confidence = 0.95, gapCV = 24 * 7
+  gapCV = 24 * 7
 )
 
 # Find outliers
