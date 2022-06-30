@@ -371,16 +371,19 @@ source("velec_str.R")
 ```{r}
 #| fig-height: 7.5
 #| fig-width: 6
-as_tsibble(velec_str$input$data) %>%
+names(velec_str_x$output$predictors) <- names(velec_str_x$input$predictors)
+as_tsibble(velec_str_x$input$data) %>%
   rename(Demand = value) %>%
   mutate(
-    Remainder = velec_str$output$random$data,
-    Trend = velec_str$output$predictors[[1]]$data,
-    Season_year = velec_str$output$predictors[[4]]$data,
-    Season_week = velec_str$output$predictors[[3]]$data,
-    Season_day = velec_str$output$predictors[[2]]$data,
+    Remainder = velec_str_x$output$random$data,
+    Trend = velec_str_x$output$predictors$Trend$data,
+    Season_year = velec_str_x$output$predictors$ASeason$data,
+    Season_week = velec_str_x$output$predictors$WSeason$data,
+    Season_day = velec_str_x$output$predictors$DSeason$data,
+    Temperature = velec_str_x$output$predictors$Temp$data +
+      velec_str_x$output$predictors$Tempsq$data,
   ) %>%
-  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Trend + Season_year + Season_week + Season_day + Remainder), method = "STR") %>%
+  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Trend + Season_year + Season_week + Season_day + Temperature + Remainder), method = "STR") %>%
   autoplot() +
   theme(legend.position = "none") +
   xlab("Month") +
@@ -390,6 +393,7 @@ as_tsibble(velec_str$input$data) %>%
 
 
 ```{r}
+#| eval: FALSE
 #| fig-height: 7.5
 #| fig-width: 6
 as_tsibble(velec_str_x$input$data) %>%
@@ -412,6 +416,7 @@ as_tsibble(velec_str_x$input$data) %>%
 
 
 ```{r}
+#| eval: FALSE
 #| fig-height: 7.5
 #| fig-width: 6
 velec %>%
