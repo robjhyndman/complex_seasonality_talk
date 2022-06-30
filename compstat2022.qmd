@@ -232,10 +232,10 @@ $$
   y_{t} = T_{t} + \sum_{i=1}^{I} S^{(i)}_{t} + \sum_{p=1}^P \phi_{p,t} z_{t,p} + R_{t}
 $$
 
-  * $T_{t}=$ trend
+  * $T_{t}=$ smooth trend component
   * $S^{(i)}_{t}=$ seasonal component $i$ (possibly complex topology)
   * $z_{p,t}=$ covariate with coefficient $\phi_{p,t}$ (possibly time-varying)
-  * $R_{t}=$ "remainder"
+  * $R_{t}=$ remainder component
 
 ## Smoothness via difference operators
 
@@ -493,11 +493,13 @@ outliers %>%
 
 ## For more information
 
--   Slides: [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
--   Source files: [github.com/robjhyndman/str_talk](https://github.com/robjhyndman/complex_seasonality_talk)
+**Slides:** [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
 
 ::: {.callout-note icon="false"}
 # Find me at:
 
-`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br> `r fa("twitter")` [\@robjhyndman](https://twitter.com/robjhyndman)<br> `r fa("github")` [\@robjhyndman](https://github.com/robjhyndman)<br> `r fa("envelope")` [rob.hyndman\@monash.edu](rob.hyndman@monash.edu)
+`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br>
+`r fa("twitter")` [\@robjhyndman](https://twitter.com/robjhyndman)<br>
+`r fa("github")` [\@robjhyndman](https://github.com/robjhyndman)<br>
+`r fa("envelope")` [rob.hyndman\@monash.edu](mailto:rob.hyndman@monash.edu)
 :::
