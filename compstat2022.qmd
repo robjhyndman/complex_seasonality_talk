@@ -140,6 +140,27 @@ velec |>
 :::
 :::
 
+
+## MSTL
+
+```{r}
+decomp <- velec |>
+  model(stl = STL(Demand)) |>
+  components() |>
+  tsbox::ts_xts()
+dy_graph <- list(
+  dygraph(decomp$stl_Demand, main="Demand", group="A", width=990, height=120),
+  dygraph(decomp$stl_trend, main="Trend", group="A", width=990, height=120),
+  dygraph(decomp$stl_season_year, main="Annual seasonality", group="A", width=990, height=120),
+  dygraph(decomp$stl_season_week, main="Weekly seasonality", group="A", width=990, height=120),
+  dygraph(decomp$stl_season_day, main="Daily seasonality", group="A", width=990, height=120),
+  dygraph(decomp$stl_remainder, main="Remainder", group="A", width=990, height=120) |>
+  dyRangeSelector(fillColor="", strokeColor="")
+)
+htmltools::browsable(htmltools::tagList(dy_graph))
+```
+
+
 ## MSTL
 
 $$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
