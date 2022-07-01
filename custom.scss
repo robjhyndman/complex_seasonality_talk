@@ -16,16 +16,18 @@ $presentation-heading-color: #0063a7 !default;
   border-left: 0px;
   padding: 20px;
   -moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
+  -webkit-border-radius: 10px;
 }
 
 // Callout backgrounds
 div.callout-note.callout-style-default .callout-caption {
   background-color: #a1b8c8 !important;
 }
+
 div.callout-warning.callout-style-default .callout-caption {
   background-color: #c8ada1 !important;
 }
+
 div.callout-note.callout-style-default .callout-body {
   font-size: 36px !important;
 }
@@ -59,10 +61,15 @@ p.author {
 .shiftup img {
   margin: 0;
 }
+
 .shiftup p {
   margin: 0;
 }
 
 .smallequations .katex {
-  font: normal 1em KaTeX_Main,Times New Roman,serif;
+  font: normal 1em KaTeX_Main, Times New Roman, serif;
+}
+
+.smalltable {
+  font-size: 50% !important;
 }

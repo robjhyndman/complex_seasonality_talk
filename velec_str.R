@@ -22,7 +22,7 @@ if (file.exists("velec_str_x.rds")) {
   # Annual seasonality
   Predictors$ASeason$times <- seq(NROW(velec_noly))
   Predictors$ASeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
-  Predictors$ASeason$lambdas <- c(1000, 400, 4000)
+  Predictors$ASeason$lambdas <- c(500, 500, 4000)
   # Weekly seasonality
   Predictors$WSeason$times <- seq(NROW(velec_noly))
   Predictors$WSeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
