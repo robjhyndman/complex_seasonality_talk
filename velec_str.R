@@ -19,14 +19,10 @@ if (file.exists("velec_str_x.rds")) {
   # Set up predictors, starting with automatically chosen ones
   Predictors <- velec_str$input$predictors
   names(Predictors) <- c("Trend", "DSeason", "WSeason", "ASeason")
-  # Trend
-  Predictors$Trend$times <- seq(NROW(velec_noly))
-  Predictors$Trend$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 50)
-  Predictors$Trend$lambdas <- c(10, 0, 0)
   # Annual seasonality
   Predictors$ASeason$times <- seq(NROW(velec_noly))
   Predictors$ASeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
-  Predictors$ASeason$lambdas <- c(100, 100, 100)
+  Predictors$ASeason$lambdas <- c(1000, 400, 4000)
   # Weekly seasonality
   Predictors$WSeason$times <- seq(NROW(velec_noly))
   Predictors$WSeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
@@ -43,6 +39,8 @@ if (file.exists("velec_str_x.rds")) {
   Predictors$Tempsq <- Predictors$Temp
   Predictors$Tempsq$name <- "Temperature^2"
   Predictors$Tempsq$data <- velec_noly$Temperature^2
+  # Remove trend
+  Predictors$Trend <- NULL
 
   # STR decomposition of electricity data
   velec_str_x <- STR(
