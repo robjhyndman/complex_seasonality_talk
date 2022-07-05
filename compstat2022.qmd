@@ -12,6 +12,8 @@ format:
     controls: true
     theme: [default, custom.scss]
     html-math-method: katex
+editor_options:
+  chunk_output_type: console
 ---
 
 ## Complex seasonality
@@ -149,13 +151,18 @@ decomp <- velec |>
   components() |>
   tsbox::ts_xts()
 dy_graph <- list(
-  dygraph(decomp$stl_Demand, main="Demand", group="A", width=990, height=120),
-  dygraph(decomp$stl_trend, main="Trend", group="A", width=990, height=120),
-  dygraph(decomp$stl_season_year, main="Annual seasonality", group="A", width=990, height=120),
-  dygraph(decomp$stl_season_week, main="Weekly seasonality", group="A", width=990, height=120),
-  dygraph(decomp$stl_season_day, main="Daily seasonality", group="A", width=990, height=120),
-  dygraph(decomp$stl_remainder, main="Remainder", group="A", width=990, height=120) |>
-  dyRangeSelector(fillColor="", strokeColor="")
+  dygraph(decomp$stl_Demand, main="", y="Demand", group="A", width=990, height=90) %>%
+    dyAxis("x", axisLabelWidth=0),
+  dygraph(decomp$stl_trend, main="", y="Trend", group="A", width=990, height=90) %>%
+    dyAxis("x", axisLabelWidth=0),
+  dygraph(decomp$stl_season_year, main="", y="Annual seasonality", group="A", width=990, height=90) %>%
+    dyAxis("x", axisLabelWidth=0),
+  dygraph(decomp$stl_season_week, main="", y="Weekly seasonality", group="A", width=990, height=90) %>%
+    dyAxis("x", axisLabelWidth=0),
+  dygraph(decomp$stl_season_day, main="", y="Daily seasonality", group="A", width=990, height=90) %>%
+    dyAxis("x", axisLabelWidth=0),
+  dygraph(decomp$stl_remainder, main="", y="Remainder", group="A", width=990, height=100) |>
+  dyRangeSelector(fillColor="", strokeColor="", height=10)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
