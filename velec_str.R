@@ -19,18 +19,18 @@ if (file.exists("velec_str_x.rds")) {
   # Set up predictors, starting with automatically chosen ones
   Predictors <- velec_str$input$predictors
   names(Predictors) <- c("Trend", "DSeason", "WSeason", "ASeason")
-  # Annual seasonality
-  Predictors$ASeason$times <- seq(NROW(velec_noly))
-  Predictors$ASeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
-  Predictors$ASeason$lambdas <- c(4000, 400, 4000)
-  # Weekly seasonality
-  Predictors$WSeason$times <- seq(NROW(velec_noly))
-  Predictors$WSeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
-  Predictors$WSeason$lambdas <- c(15, 0.1, 100)
   # Daily seasonality
   Predictors$DSeason$times <- seq(NROW(velec_noly))
   Predictors$DSeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 12)
-  Predictors$DSeason$lambdas <- c(1.3e6, 0.01, 4e8)
+  Predictors$DSeason$lambdas <- c(45, 0.1, 250)
+  # Weekly seasonality
+  Predictors$WSeason$times <- seq(NROW(velec_noly))
+  Predictors$WSeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
+  Predictors$WSeason$lambdas <- c(50, 0.5, 250)
+  # Annual seasonality
+  Predictors$ASeason$times <- seq(NROW(velec_noly))
+  Predictors$ASeason$timeKnots <- seq(from = 1, to = NROW(velec_noly), length.out = 6)
+  Predictors$ASeason$lambdas <- c(1e7, 1e2, 1e7)
   # Temperature
   Predictors$Temp <- Predictors$Trend
   Predictors$Temp$name <- "Temperature"
@@ -41,19 +41,10 @@ if (file.exists("velec_str_x.rds")) {
   Predictors$Tempsq$data <- velec_noly$Temperature^2
   # Remove trend
   Predictors$Trend <- NULL
-  # Lambdas
-  lambdas <- list(DSeason = list(lambdas=c(15, 1, 100)),
-                  WSeason = list(lambdas=c(15, 1, 100)),
-                  ASeason = list(lambdas=c(2000, 500, 2000)),
-                  Temp = list(lambdas=c(1e8, 0, 0)),
-                  Tempsq = list(lambdas=c(1e8, 0, 0))
-  )
   # STR decomposition of electricity data
   velec_str_x <- STR(
     data = velec_msts,
     predictors = Predictors,
-    lambdas = lambdas,
-    pattern = c(rep(TRUE,6),rep(FALSE,3),rep(FALSE,6)),
     gapCV = 24 * 7
   )
   saveRDS(velec_str_x, "velec_str_x.rds")
