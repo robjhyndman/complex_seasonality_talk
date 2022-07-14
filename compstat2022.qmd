@@ -64,6 +64,10 @@ velec |>
   dyOptions(colors = "#c14b14")
 ```
 
+::: {.notes}
+Note Jan 2014 -- bad bushfires
+:::
+
 ## Complex seasonality
 
 ```{r}
@@ -80,6 +84,10 @@ telec |>
   dyRangeSelector() |>
   dyOptions(colors = "#c14b14")
 ```
+
+::: {.notes}
+Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by Eid al-Adha (Festival of Sacrifice). In 2006, Eid al-Adha happens twice in same Gregorian year.
+:::
 
 ## Complex seasonality
 
