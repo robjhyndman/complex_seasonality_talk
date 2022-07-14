@@ -44,7 +44,7 @@ div.callout-note.callout-style-default .callout-body {
 
 // Big gap before author on front page
 p.author {
-  margin-top: 2em;
+  margin-top: 7em;
 }
 
 // Bigger code blocks
@@ -72,4 +72,8 @@ p.author {
 
 .smalltable {
   font-size: 50% !important;
+}
+
+#title-slide h1 {
+  font-size: 90px;
 }

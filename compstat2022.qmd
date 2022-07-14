@@ -12,6 +12,11 @@ format:
     controls: true
     theme: [default, custom.scss]
     html-math-method: katex
+    self-contained: true
+    title-slide-attributes:
+      data-background-image: "figs/compstat1.png"
+      data-background-size: "100% 20%"
+      data-background-opacity: .5
 editor_options:
   chunk_output_type: console
 ---
