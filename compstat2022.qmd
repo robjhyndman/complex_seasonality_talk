@@ -402,10 +402,10 @@ decomp <- as_tsibble(velec_str_x$input$data) |>
     Season_year = velec_str_x$output$predictors$ASeason$data,
     Season_week = velec_str_x$output$predictors$WSeason$data,
     Season_day = velec_str_x$output$predictors$DSeason$data,
-    Temperature = velec_str_x$output$predictors$Temp$data +
-      velec_str_x$output$predictors$Tempsq$data,
+    Temp = velec_str_x$output$predictors$Temp$data,
+    Tempsq = velec_str_x$output$predictors$Tempsq$data
   ) |>
-  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Season_year + Season_week + Season_day + Temperature + Remainder), method = "STR")
+  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Season_year + Season_week + Season_day + Temp + Tempsq + Remainder), method = "STR")
 
 # Identify outliers
 outliers <- decomp |>
@@ -417,24 +417,24 @@ outliers <- decomp |>
     Date = as_date(DateTime),
     Time = format(as.POSIXct(DateTime), format = "%H:%M")
   ) |>
-  select(DateTime, Date, Time, Remainder, Demand)
+  select(DateTime, Date, Time, Temperature = Temp, Demand, Remainder)
 
 # Make xts for dygraph
 decomp.xts <- decomp |>
   tsbox::ts_xts()
 
 dy_graph <- list(
-  dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_year, main = "Annual seasonality", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_week, main = "Weekly seasonality", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_day, main = "Daily seasonality", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Temperature, main = "Temperature", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Remainder, main = "Remainder", group = "A", width = 990, height = 120) |>
+  dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 90) |>
     dyRangeSelector(fillColor = "", strokeColor = "")
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
@@ -470,8 +470,9 @@ htmltools::browsable(htmltools::tagList(dy_graph))
 ```{r}
 outliers |>
   arrange(desc(abs(Remainder))) |>
+  select(-DateTime) |>
   DT::datatable(fillContainer = FALSE, options = list(pageLength = 5)) |>
-  DT::formatRound(columns = c("Remainder", "Demand"), digits = 2)
+  DT::formatRound(columns = c("Temperature", "Remainder", "Demand"), digits = 2)
 ```
 
 :::
