@@ -94,7 +94,8 @@ Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by
 ```{r}
 us_gasoline |>
   tsbox::ts_xts() |>
-  dygraph(main = "US finished motor gasoline product supplied", y = "Million barrels per day") |>
+  dygraph(main = "US finished motor gasoline product supplied", 
+          y = "Million barrels per day") |>
   dyRangeSelector() |>
   dyOptions(colors = "#c14b14")
 ```
@@ -323,7 +324,7 @@ Analogous difference matrices $\bm{D}_{kk,i}$ and $\bm{D}_{kt,i}$ ensure smoothn
 ## Gaussian remainders
 
 * $R_{t} \sim \text{NID}(0,\sigma_R^2)$.
-* $\bm{y} = [y_1,\dots,y_n]'=$ $vector of observations
+* $\bm{y} = [y_1,\dots,y_n]'=$ vector of observations
 * $\bm{Z}=[z_{t,p}]=$ covariate matrix with coefficient $\bm{\Phi} = [\phi_{p,t}]$
 * $\bm{Q}_i=$  matrix that extracts $\langle S^{(i)}_{\kappa(t),t} \rangle_{t=1}^{n}$ from $\bm{s}_i$.
 * Residuals: $\bm{r} = \bm{y} - \sum_i\bm{Q}_i\bm{s}_i -\bm{\ell} - \bm{Z}\bm{\Phi}$ have density
@@ -470,7 +471,7 @@ outliers |>
 
 :::
 
-## For more information
+# For more information
 
 **Slides:** [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
 
