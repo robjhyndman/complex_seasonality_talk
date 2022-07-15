@@ -93,7 +93,7 @@ Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by
 ```{r}
 us_gasoline |>
   tsbox::ts_xts() |>
-  dygraph(main = "US finished motor gasoline product supplied", 
+  dygraph(main = "US finished motor gasoline product supplied",
           y = "Million barrels per day") |>
   dyRangeSelector() |>
   dyOptions(colors = "#c14b14")
@@ -194,17 +194,17 @@ $$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
 
 ```{r, eval=FALSE, echo=TRUE}
 # X: time series object
-# iterate: number of  STL iterations
+# periods: vector of seasonal periods in increasing order
 # s.window: seasonal window values
-# seas.ids: vector of seasonal periods in increasing order
+# iterate: number of  STL iterations
 
-seasonality <- matrix(0, nrow = nrow(X), ncol = length(seas.ids))
+seasonality <- matrix(0, nrow = nrow(X), ncol = length(periods))
 deseas <- X
 for (j in 1:iterate) {
-  for (i in 1:length(seas.ids)) {
+  for (i in 1:length(periods)) {
     deseas <- deseas + seasonality[, i]
     fit <- model(
-      STL(deseas ~ season(period = seas.ids[i], window = s.win[i]))
+      STL(deseas ~ season(period = periods[i], window = s.window[i]))
     ) |>
       components()
     seasonality[, i] <- fit$season
@@ -382,6 +382,12 @@ $\bm{X} =
 ::::
 
 ## STR
+
+::: {.smaller}
+
+Three seasonal components, quadratic temperature regressors
+
+:::
 
 ```{r}
 # Fit basic STR model
