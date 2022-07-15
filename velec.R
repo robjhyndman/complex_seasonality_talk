@@ -44,3 +44,25 @@ velec_noly <- velec_noly |>
 # msts version
 velec_msts <- velec_noly$Demand |>
   forecast::msts(start = 2012, seasonal.periods = c(24, 24 * 7, 24 * 365))
+
+# Create cover image
+png(file = "figs/cover.png", width=20, height=4, units="cm", res=500, type="cairo-png")
+velec |>
+  filter(Date >= "2012-04-14", Date <= "2012-06-24") |>
+  autoplot(Demand, col="#c14b14", alpha=0.5) +
+  scale_x_continuous(breaks=NULL) +
+  scale_y_continuous(breaks=NULL) +
+  theme_minimal() +
+  labs(y="",x="") +
+  theme(axis.line = element_blank(),
+              axis.ticks=element_blank(),
+              axis.title=element_blank(),
+              axis.text.y=element_blank(),
+              axis.text.x=element_blank(),
+              panel.border = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_rect(fill = "#f0f0f0"),
+              plot.margin = unit(c(-.2, -2, -.2, -2), "cm")
+  )
+dev.off()
