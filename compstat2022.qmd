@@ -165,16 +165,22 @@ decomp <- velec |>
   tsbox::ts_xts()
 dy_graph <- list(
   dygraph(decomp$stl_Demand, main = "", y = "Demand", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp$stl_trend, main = "", y = "Trend", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp$stl_season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp$stl_season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp$stl_season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp$stl_remainder, main = "", y = "Remainder", group = "A", width = 990, height = 105) |>
+    dyOptions(colors = "#0063a7") |>
     dyRangeSelector(strokeColor = "", height = 15)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
@@ -418,16 +424,22 @@ decomp.xts <- decomp |>
 
 dy_graph <- list(
   dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 85) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 85) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 85) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 85) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 85) |>
-    dyAxis("x", axisLabelWidth = 0),
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#0063a7"),
   dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 100) |>
+    dyOptions(colors = "#0063a7") |>
     dyRangeSelector(strokeColor = "", height = 15)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
@@ -451,8 +463,10 @@ outliers <- decomp |>
 
 ```{r}
 dy_graph <- list(
-  dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120),
-  dygraph(decomp.xts$Remainder, main = "Remainder", group = "A", width = 990, height = 120)
+  dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120)  |>
+    dyOptions(colors = "#0063a7"),
+  dygraph(decomp.xts$Remainder, main = "Remainder", group = "A", width = 990, height = 120) |>
+    dyOptions(colors = "#0063a7")
 )
 # Add outlier markers
 for (j in seq(2)) {
@@ -461,7 +475,7 @@ for (j in seq(2)) {
       dyShading(
         from = outliers$DateTime[i] - 3600,
         to = outliers$DateTime[i] + 3600,
-        color = if_else(outliers$Remainder[i] < 0, "#c14b14", "#0063a7")
+        color = "#c14b1477"
       )
   }
 }
