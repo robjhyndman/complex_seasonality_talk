@@ -174,8 +174,8 @@ dy_graph <- list(
     dyAxis("x", axisLabelWidth = 0),
   dygraph(decomp$stl_season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp$stl_remainder, main = "", y = "Remainder", group = "A", width = 990, height = 100) |>
-    dyRangeSelector(fillColor = "", strokeColor = "", height = 10)
+  dygraph(decomp$stl_remainder, main = "", y = "Remainder", group = "A", width = 990, height = 105) |>
+    dyRangeSelector(strokeColor = "", height = 15)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
@@ -290,7 +290,7 @@ x <- seq(1, 14, l = 500)
 lines3d(x = x, y = 3 * sin(2 * pi * x/7), z = 3 * cos(2 * pi * x/7),
         lwd = 4, color = "#c14b14")
 axis3d(edge = "x", at = seq(1.5, 13.5, l = 14), labels = 1:14)
-text3d(x = 12, y = -4, z = -4, texts = "time t")
+text3d(x = 12, y = -4, z = -4, texts = "Day t")
 text3d(x = -4, y = 0, z = 0, texts = "season k")
 text3d(x = 0, y = 3 * sin(2 * pi * (1:7)/7), z = 3 * cos(2 * pi * (1:7)/7),
        texts = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
@@ -412,6 +412,30 @@ decomp <- as_tsibble(velec_str_x$input$data) |>
   ) |>
   as_dable(response = "Demand", aliases = rlang::exprs(Demand = Season_year + Season_week + Season_day + Temp + Tempsq + Remainder), method = "STR")
 
+# Make xts for dygraph
+decomp.xts <- decomp |>
+  tsbox::ts_xts()
+
+dy_graph <- list(
+  dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0),
+  dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0),
+  dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0),
+  dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0),
+  dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0),
+  dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 100) |>
+    dyRangeSelector(strokeColor = "", height = 15)
+)
+htmltools::browsable(htmltools::tagList(dy_graph))
+```
+
+## STR outliers
+
+```{r}
 # Identify outliers
 outliers <- decomp |>
   as_tibble() |>
@@ -423,29 +447,7 @@ outliers <- decomp |>
     Time = format(as.POSIXct(DateTime), format = "%H:%M")
   ) |>
   select(DateTime, Date, Time, Temperature = Temp, Demand, Remainder)
-
-# Make xts for dygraph
-decomp.xts <- decomp |>
-  tsbox::ts_xts()
-
-dy_graph <- list(
-  dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 90) |>
-    dyAxis("x", axisLabelWidth = 0),
-  dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 90) |>
-    dyRangeSelector(fillColor = "", strokeColor = "")
-)
-htmltools::browsable(htmltools::tagList(dy_graph))
 ```
-
-## STR outliers
 
 ```{r}
 dy_graph <- list(
@@ -464,7 +466,7 @@ for (j in seq(2)) {
   }
 }
 dy_graph[[2]] <- dy_graph[[2]] |>
-  dyRangeSelector(fillColor = "", strokeColor = "")
+  dyRangeSelector(strokeColor = "")
 
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
@@ -484,7 +486,7 @@ outliers |>
 
 # For more information
 
-**Slides:** [robjhyndman.com/seminars/compstat2002](https://robjhyndman.com/seminars/compstat2002)
+**Slides:** [robjhyndman.com/seminars/compstat2022](https://robjhyndman.com/seminars/compstat2022)
 
 ::: {.callout-note icon="false"}
 # Find me at:
