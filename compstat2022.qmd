@@ -1,11 +1,12 @@
 ---
 title: "Decomposing time series with complex seasonality"
 author: Rob J Hyndman
-institute: "<img src='figs/monash_bw.png' width='25%'>"
+institute: "COMPSTAT: 23 August 2022"
 abstract: "Time series data often contain a rich complexity of seasonal patterns. Time series that are observed at a sub-daily level can exhibit multiple seasonal patterns corresponding to different granularities such as hour-of-the-day, day-of-the-week or month-of-the-year. They can be nested (e.g., hour-of-the-day within day-of-the-week) and non-nested (e.g., day-of-the-year in both the Gregorian and Hijri calendars). I will discuss two new time series decomposition tools for handling seasonalities in time series data: MSTL and STR. These allow for multiple seasonal and cyclic components, covariates, seasonal patterns that may have non-integer periods, and seasonality with complex topology. They can be used for time series with any regular time index including hourly, daily, weekly, monthly or quarterly data, but tackle many more decomposition problems than other methods allow."
 time: 20 mins
 format:
   revealjs:
+    logo: figs/monash_bw.png
     slide-number: "c"
     preview-links: auto
     fig-format: svg
@@ -16,11 +17,14 @@ format:
     title-slide-attributes:
       data-background-image: "figs/cover.png"
       data-background-size: "100% 20%"
+    include-after: |
+      <script src="https://kit.fontawesome.com/0fba9333d8.js" crossorigin="anonymous"></script>
+callout-icon: false
 editor_options:
   chunk_output_type: console
 ---
 
-## Complex seasonality
+## Complex seasonality {auto-animate=true}
 
 ```{r}
 # Load packages needed later
@@ -29,6 +33,15 @@ library(dygraphs)
 library(fpp3)
 library(gt)
 library(fontawesome)
+
+fa_list <- function(x, incremental = FALSE) {
+  icons <- names(x)
+  fragment <- ifelse(incremental, "fragment", "")
+  items <- glue::glue('<li class="{fragment}"><span class="fa-li"><i class="{icons}"></i></span> {x}</li>')
+  paste('<ul class="fa-ul">',
+        paste(items, collapse = "\n"),
+        "</ul>", sep = "\n")
+}
 
 # Colours to be viridis for continuous scales and Okabe for discrete scales
 options(
@@ -67,7 +80,7 @@ velec |>
 Note Jan 2014 -- bad bushfires
 :::
 
-## Complex seasonality
+## Complex seasonality {auto-animate=true}
 
 ```{r}
 telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names = FALSE) |>
@@ -88,7 +101,7 @@ telec |>
 Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by Eid al-Adha (Festival of Sacrifice). In 2006, Eid al-Adha happens twice in same Gregorian year.
 :::
 
-## Complex seasonality
+## Complex seasonality {auto-animate=true}
 
 ```{r}
 us_gasoline |>
@@ -100,21 +113,21 @@ us_gasoline |>
 ```
 
 
-## Complex seasonal topology
+## Complex seasonal topology {auto-animate=true}
 
 #### Example: hourly data
 
 ![](figs/topology.png)
 
-## Complex seasonality
+## Complex seasonality {auto-animate=true}
 
 ::: tightlist
--   Multiple seasonal periods, not necessarily nested
--   Non-integer seasonality
--   Irregular seasonal topography
--   Seasonality that depends on covariates
--   Complex seasonal topology
+
+`r fa_list(c("fa-solid fa-wave-square" = "Multiple seasonal periods, not necessarily nested", "fa-solid fa-wave-square" = "Non-integer seasonality", "fa-solid fa-wave-square" = "Irregular seasonal topography", "fa-solid fa-wave-square" = "Seasonality that depends on covariates", "fa-solid fa-wave-square" = "Complex seasonal topology"), incremental=TRUE)`
+
 :::
+
+. . .
 
 > No existing decomposition method handles all of these.
 
@@ -137,7 +150,7 @@ us_gasoline |>
 -   Implemented in R packages `forecast` and `fable`.
 :::
 
-## MSTL
+## MSTL {auto-animate=true}
 
 ::: {layout-ncol="2"}
 ```{r mstl_elec, echo=TRUE, eval=FALSE}
@@ -156,7 +169,7 @@ velec |>
 :::
 
 
-## MSTL
+## MSTL {auto-animate=true}
 
 ```{r}
 decomp <- velec |>
@@ -166,39 +179,78 @@ decomp <- velec |>
 dy_graph <- list(
   dygraph(decomp$stl_Demand, main = "", y = "Demand", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp$stl_trend, main = "", y = "Trend", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp$stl_season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp$stl_season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp$stl_season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp$stl_remainder, main = "", y = "Remainder", group = "A", width = 990, height = 105) |>
-    dyOptions(colors = "#0063a7") |>
+    dyOptions(colors = "#c14b14") |>
     dyRangeSelector(strokeColor = "", height = 15)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
 
 
-## MSTL
+## MSTL {auto-animate=true}
 
 $$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
 
--   $I=$ number of seasonalities in $y_t$
--   $T_t=$ smooth trend component
--   $S_t^{(i)}=$ seasonal component $i$
--   $R_t=$ remainder component
+:::: {.columns}
 
-## MSTL
+::: {.column width="69%"}
+
+::: tighttable
+
+```{r}
+#| results: asis
+tribble(
+  ~symbol, ~meaning,
+  "$y_t=$", "observation at time $t$",
+  "$T_t=$","smooth trend component",
+  "$S_t^{(i)}=$","seasonal component $i$",
+  "","$i = 1,\\dots,I$",
+  "$R_t=$","remainder component"
+) |>
+  xtable::xtable(align=c("crl")) |>
+  print(type="html",
+        include.colnames=FALSE, include.rownames = FALSE,
+        html.table.attributes = "border=0 margin=0")
+```
+
+:::
+
+:::
+
+::: {.column width="30%"}
+
+::: fragment
+::: {.callout-note .f1}
+
+## Estimation
+
+Components updated iteratively.
+
+:::
+:::
+
+:::
+
+::::
+
+## MSTL {auto-animate=true}
 
 ```{r, eval=FALSE, echo=TRUE}
+#| code-line-numbers: "|1-4|6-7|8,18|9,17|10|11-14|15-16|19-21"
+
 # X: time series object
 # periods: vector of seasonal periods in increasing order
 # s.window: seasonal window values
@@ -210,8 +262,8 @@ for (j in 1:iterate) {
   for (i in 1:length(periods)) {
     deseas <- deseas + seasonality[, i]
     fit <- model(
-      STL(deseas ~ season(period = periods[i], window = s.window[i]))
-    ) |>
+        STL(deseas ~ season(period = periods[i], window = s.window[i]))
+      ) |>
       components()
     seasonality[, i] <- fit$season
     deseas <- deseas - seasonality[, i]
@@ -222,7 +274,7 @@ remainder <- deseas - trend
 return(trend, remainder, seasonality)
 ```
 
-## MSTL
+## MSTL {auto-animate=true}
 
 ### fable syntax
 
@@ -252,18 +304,55 @@ vector |>
 -   Implemented in R package `stR`.
 :::
 
-## STR
+## STR {auto-animate=true}
 
 $$
   y_{t} = T_{t} + \sum_{i=1}^{I} S^{(i)}_{t} + \sum_{p=1}^P \phi_{p,t} z_{t,p} + R_{t}
 $$
 
-  * $T_{t}=$ smooth trend component
-  * $S^{(i)}_{t}=$ seasonal component $i$ (possibly complex topology)
-  * $z_{p,t}=$ covariate with coefficient $\phi_{p,t}$ (possibly time-varying)
-  * $R_{t}=$ remainder component
+:::: {.columns}
 
-## Smoothness via difference operators
+::: {.column width="69%"}
+
+::: tighttable
+
+```{r}
+#| results: asis
+tribble(
+  ~symbol, ~meaning,
+  "$T_t=$","smooth trend component",
+  "$S_t^{(i)}=$","seasonal component $i$ (possibly&nbsp;complex topology)",
+  "$z_{p,t}=$","covariate with coefficient $\\phi_{p,t}$ (possibly&nbsp;time-varying)",
+  "$R_t=$","remainder component"
+) |>
+  xtable::xtable(align=c("crl")) |>
+  print(type="html",
+        sanitize.text.function = function(x){x},
+        include.colnames=FALSE, include.rownames = FALSE,
+        html.table.attributes = "border=0 margin=0")
+```
+
+:::
+
+:::
+
+::: {.column width="30%"}
+
+::: fragment
+::: {.callout-note .f1}
+
+## Estimation
+
+Components estimated using penalized MLE
+
+:::
+:::
+
+:::
+
+::::
+
+## Smoothness via difference operators {auto-animate=true}
 
 Smooth trend obtained by requiring $\Delta_2 T_t \sim \text{NID}(0,\sigma_L^2)$
 
@@ -277,7 +366,7 @@ $$f(\bm{D}_\ell \bm{\ell}) \propto \exp\left\{-\frac{1}{2}\big\|\bm{D}_\ell \bm{
 * $\bm{\ell} = \langle T_{t} \rangle_{t=1}^{n}$
 * $\bm{D}_\ell=$ 2nd difference operator matrix: $\bm{D}_\ell\bm{\ell} = \langle\Delta^2 T_{t}\rangle_{t=3}^n$
 
-## Smooth 2D seasonal surfaces
+## Smooth 2D seasonal surfaces {auto-animate=true}
 
 ```{r, setup}
 options(rgl.useNULL = TRUE)
@@ -310,7 +399,7 @@ rglwidget(height = 360)
   * $S^{(i)}_{k,t}=$ 2d season ($k=1,\dots,m_i;t=1,\dots,n$)
   * $\sum\limits_k S^{(i)}_{k,t} = 0$ for each $t$.
 
-## Smooth 2D seasonal surfaces
+## Smooth 2D seasonal surfaces {auto-animate=true}
 
 * $\bm{S}^{(i)} = [S_{k,t}^{(i)}]$ the $i$th seasonal surface matrix
 * $\bm{s}_i = \text{vec}(\bm{S}_i)=$ the $i$th seasonal surface in vector form
@@ -326,7 +415,7 @@ Smoothness in time $t$ direction:
 
 Analogous difference matrices $\bm{D}_{kk,i}$ and $\bm{D}_{kt,i}$ ensure smoothness in season and time-season directions.
 
-## Gaussian remainders
+## Gaussian remainders {auto-animate=true}
 
 * $R_{t} \sim \text{NID}(0,\sigma_R^2)$.
 * $\bm{y} = [y_1,\dots,y_n]'=$ vector of observations
@@ -337,7 +426,7 @@ $$
   f(\bm{r}) \propto \exp\Big\{-\frac{1}{2}\big\|\bm{r}/\sigma_R\big\|_{L_2}^2\Big\},
 $$
 
-## MLE for STR {.smaller}
+## MLE for STR {.smaller auto-animate=true}
 
 Minimize wrt $\bm{\Phi}$, $\bm{\ell}$ and $\bm{s}_i$:
 
@@ -387,7 +476,7 @@ $\bm{X} =
 :::
 ::::
 
-## STR
+## STR {auto-animate=true}
 
 ::: {.smaller}
 
@@ -425,27 +514,27 @@ decomp.xts <- decomp |>
 dy_graph <- list(
   dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 85) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 85) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 85) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 85) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 85) |>
     dyAxis("x", axisLabelWidth = 0) |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 100) |>
-    dyOptions(colors = "#0063a7") |>
+    dyOptions(colors = "#c14b14") |>
     dyRangeSelector(strokeColor = "", height = 15)
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
 
-## STR outliers
+## STR outliers {auto-animate=true}
 
 ```{r}
 # Identify outliers
@@ -464,9 +553,9 @@ outliers <- decomp |>
 ```{r}
 dy_graph <- list(
   dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120)  |>
-    dyOptions(colors = "#0063a7"),
+    dyOptions(colors = "#c14b14"),
   dygraph(decomp.xts$Remainder, main = "Remainder", group = "A", width = 990, height = 120) |>
-    dyOptions(colors = "#0063a7")
+    dyOptions(colors = "#c14b14")
 )
 # Add outlier markers
 for (j in seq(2)) {

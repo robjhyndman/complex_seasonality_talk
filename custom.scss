@@ -34,7 +34,11 @@ div.callout-note.callout-style-default .callout-body {
 
 // headers
 .reveal h3 {
-  color: #c14b14;
+  color: #c14b14 !important;
+}
+
+.reveal h4 {
+  color: #c14b14 !important;
 }
 
 // Remove ugly lines in tables
@@ -58,6 +62,12 @@ p.author {
   margin-bottom: 0.1em !important;
 }
 
+// Class for tight tables
+.tighttable th, td {
+  padding: 2.5px !important;
+  margin: 1px !important;
+}
+
 .shiftup img {
   margin: 0;
 }
@@ -76,4 +86,11 @@ p.author {
 
 #title-slide h1 {
   font-size: 90px;
+}
+
+
+.fa-ul {
+  list-style-type: none!important;
+  margin-left: var(--fa-li-margin, 2.5em)!important;
+  padding-left: 0!important;
 }
