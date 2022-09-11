@@ -25,7 +25,7 @@ format:
       <script src="https://kit.fontawesome.com/0fba9333d8.js" crossorigin="anonymous"></script>
 callout-icon: false
 freeze: true
-execute: 
+execute:
   cache: true
 editor_options:
   chunk_output_type: console
@@ -43,7 +43,7 @@ library(dygraphs)
 library(fpp3)
 library(gravitas)
 # Need corrected version of hakear
-#remotes::install_github("robjhyndman/hakear") 
+#remotes::install_github("robjhyndman/hakear")
 library(hakear)
 library(gghdr)
 library(gt)
@@ -321,7 +321,7 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  prob_plot("month_year", "day_week", 
+  prob_plot("month_year", "day_week",
             plot_type = "quantile",
             response = "Demand",
             quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
@@ -336,10 +336,10 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  create_gran("hhour_day") |> 
-  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
-  prob_plot("month_year","hhour_day", 
-            plot_type = "quantile", 
+  create_gran("hhour_day") |>
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |>
+  prob_plot("month_year","hhour_day",
+            plot_type = "quantile",
             response = "Demand",
             quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
   ) +
@@ -350,10 +350,10 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  create_gran("hhour_day") |> 
-  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
+  create_gran("hhour_day") |>
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |>
   prob_plot("hhour_day", "month_year",
-            plot_type = "quantile", 
+            plot_type = "quantile",
             response = "Demand",
             quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
   ) +
@@ -396,10 +396,10 @@ vic_elec |> search_gran()
 
 ```{r}
 #| echo: TRUE
-harmonies <- vic_elec |> 
+harmonies <- vic_elec |>
   harmony(filter_out = c("hour","fortnight","quarter","semester"))
-vic_elec |> 
-  hakear::rank_harmonies(harmonies, response = Demand) |> 
+vic_elec |>
+  rank_harmonies(harmonies, response = Demand) |>
   filter(facet_levels < 20)
 ```
 
@@ -407,12 +407,12 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  create_gran("hhour_day") |> 
-  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
-  prob_plot("month_year", "hhour_day", 
-            plot_type = "quantile", 
+  create_gran("hhour_day") |>
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |>
+  prob_plot("month_year", "hhour_day",
+            plot_type = "quantile",
             response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25, 
+            quantile_prob = c(0.05, 0.1, 0.25,
                               0.5, 0.75, 0.9, 0.95)
   ) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
@@ -423,10 +423,10 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  prob_plot("day_week", "hhour_day", 
-            plot_type = "quantile", 
+  prob_plot("day_week", "hhour_day",
+            plot_type = "quantile",
             response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25, 
+            quantile_prob = c(0.05, 0.1, 0.25,
                               0.5, 0.75, 0.9, 0.95)
   ) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
@@ -436,10 +436,10 @@ vic_elec |>
 
 ```{r}
 vic_elec |>
-  prob_plot("month_year","day_week", 
-            plot_type = "quantile", 
+  prob_plot("month_year","day_week",
+            plot_type = "quantile",
             response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25, 
+            quantile_prob = c(0.05, 0.1, 0.25,
                               0.5, 0.75, 0.9, 0.95)
   ) +
   scale_x_discrete(labels = c("M","T","W","T","F","S","S")) +
@@ -909,7 +909,7 @@ outliers |>
 
 # For more information
 
-**Slides:** [robjhyndman.com/seminars/compstat2022](https://robjhyndman.com/seminars/compstat2022)
+**Slides:** [robjhyndman.com/seminars/padova2022](https://robjhyndman.com/seminars/padova2022)
 
 ::: {.callout-note icon="false"}
 # Find me at:
