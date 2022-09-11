@@ -1,0 +1,916 @@
+---
+title: "Visualization of complex&nbsp;seasonal&nbsp;patterns in&nbsp;time&nbsp;series"
+author: Rob J Hyndman
+institute: "Padova: 23 September 2022"
+abstract: "Time series data often contains a rich complexity of seasonal patterns. Time series that are observed at a sub-daily level can exhibit multiple seasonal patterns corresponding to different granularities. Seasonal granularities can be circular such as hour-of-the-day, day-of-the-week or month-of-the-year; or quasi-circular such as day-of-the-month. They can be nested (e.g., hour-of-the-day within day-of-the-week) and non-nested (e.g., day-of-the-year in both the Gregorian and Hijri calendars). They can also follow irregular topologies induced by public holidays and other aperiodic events. Available tools to visualize, model and forecast these seasonal patterns are currently very limited. I will discuss two new time series decomposition tools for handling seasonal data: MSTL and STR. These allow for multiple seasonal and cyclic components, covariates, seasonal patterns that may have non-integer periods, and seasonality with complex topology. They can be used for time series with any regular time index including hourly, daily, weekly, monthly or quarterly data, but tackle many more decomposition problems than other methods allow. I will also demonstrate some new tools to assist in visualizing seasonal patterns in time series, emphasising changes in the conditional distribution with respect to different time granularities. The granularities form categorical variables (ordered or unordered) which induce groupings of the observations. The resulting graphics are then displays of conditional distributions compared across combinations of these categorical variables. These are implemented in the gravitas package for R."
+time: 45 mins
+format:
+  revealjs:
+    logo: figs/monash_bw.png
+    slide-number: "c"
+    preview-links: auto
+    fig-format: png
+    fig-dpi: 300
+    fig-width: 8
+    fig-height: 4
+    controls: true
+    theme: [default, custom.scss]
+    html-math-method: katex
+    self-contained: true
+    title-slide-attributes:
+      data-background-image: "figs/cover.png"
+      data-background-size: "100% 20%"
+      data-background-position: "0% 65%"
+    include-after: |
+      <script src="https://kit.fontawesome.com/0fba9333d8.js" crossorigin="anonymous"></script>
+callout-icon: false
+freeze: true
+execute: 
+  cache: true
+editor_options:
+  chunk_output_type: console
+---
+
+# Complex seasonality
+
+
+## Complex seasonality {auto-animate=true}
+
+```{r cache=FALSE}
+# Load packages needed later
+library(tidyverse)
+library(dygraphs)
+library(fpp3)
+library(gravitas)
+library(gghdr)
+library(gt)
+library(fontawesome)
+
+fa_list <- function(x, incremental = FALSE) {
+  icons <- names(x)
+  fragment <- ifelse(incremental, "fragment", "")
+  items <- glue::glue('<li class="{fragment}"><span class="fa-li"><i class="{icons}"></i></span> {x}</li>')
+  paste('<ul class="fa-ul">',
+    paste(items, collapse = "\n"),
+    "</ul>",
+    sep = "\n"
+  )
+}
+
+# Colours to be viridis for continuous scales and Okabe for discrete scales
+options(
+  digits = 4,
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis",
+  ggplot2.discrete.colour = c("#009E73", "#E69F00", "#56B4E9", "#F0E442", "#CC79A7"),
+  ggplot2.discrete.fill = c("#009E73", "#E69F00", "#56B4E9", "#F0E442", "#CC79A7")
+)
+ggplot2::theme_set(theme_get() + theme(text = element_text(family = "Carlito")))
+
+# Set up Victorian Electricity data set
+source("velec.R")
+```
+
+```{css}
+/* Adding here rather than in scss file to override an !important flag */
+div.callout-note {
+  border-left-color: #0063a7 !important;
+}
+div.callout-warning {
+  border-left-color: #c14b14 !important;
+}
+```
+
+```{r}
+#| fig-width: 3.4
+#| fig-height: 1.9
+velec |>
+  select(DateTime, Demand) |>
+  tsbox::ts_xts() |>
+  dygraph(main = "Victorian half-hourly electricity demand", ylab = "Demand (GW)") |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
+```
+
+::: {.notes}
+Note Jan 2014 -- bad bushfires
+:::
+
+## Complex seasonality {auto-animate=true}
+
+```{r}
+#| fig-width: 3.4
+#| fig-height: 1.9
+telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names = FALSE) |>
+  rename(Demand = X1) |>
+  mutate(
+    Date = seq(as.Date("2000-01-01"), to = as.Date("2008-12-31"), by = "1 day"),
+    Demand = Demand / 1e3
+  ) |>
+  as_tsibble(index = Date)
+telec |>
+  tsbox::ts_xts() |>
+  dygraph(main = "Turkish daily electricity demand", y = "Demand (GW)") |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
+```
+
+::: {.notes}
+Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by Eid al-Adha (Festival of Sacrifice). In 2006, Eid al-Adha happens twice in same Gregorian year.
+:::
+
+## Complex seasonality {auto-animate=true}
+
+```{r}
+#| fig-width: 3.4
+#| fig-height: 1.9
+us_gasoline |>
+  tsbox::ts_xts() |>
+  dygraph(
+    main = "US finished motor gasoline product supplied",
+    y = "Million barrels per day"
+  ) |>
+  dyRangeSelector() |>
+  dyOptions(colors = "#c14b14")
+```
+
+
+## Complex seasonal topology {auto-animate=true}
+
+#### Example: hourly data
+
+![](figs/topology.png)
+
+## Complex seasonality {auto-animate=true}
+
+::: tightlist
+
+`r fa_list(c("fa-solid fa-wave-square" = "Multiple seasonal periods, not necessarily nested", "fa-solid fa-wave-square" = "Non-integer seasonality", "fa-solid fa-wave-square" = "Irregular seasonal topography", "fa-solid fa-wave-square" = "Seasonality that depends on covariates", "fa-solid fa-wave-square" = "Complex seasonal topology"), incremental=FALSE)`
+
+:::
+
+. . .
+
+::: {.blockquote}
+
+* How to effectively visualise the underlying seasonalities?
+* How to decompose such time series into trend and multiple season components?
+
+:::
+
+# Visualizing complex seasonalities
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |>
+  mutate(hhour_day = as.numeric(hhour_day) / 2 - 0.5) |>
+  ggplot(aes(x = hhour_day, y = Demand, group = Date)) +
+  geom_line(alpha = 0.1) +
+  scale_x_continuous(breaks = seq(0, 24, by = 4)) +
+  labs(x = "Time", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |>
+  mutate(
+    hhour_day = factor(as.numeric(hhour_day), labels = seq(0, 23.5, by = 0.5))
+  ) |>
+  ggplot(aes(x = hhour_day, y = Demand)) +
+  geom_boxplot() +
+  scale_x_discrete(breaks = seq(0, 24, by = 4)) +
+  labs(x = "Time", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |>
+  mutate(
+    hhour_day = factor(as.numeric(hhour_day), labels = seq(0, 23.5, by = 0.5))
+  ) |>
+  ggplot(aes(x = hhour_day, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  scale_x_discrete(breaks = seq(0, 24, by = 4)) +
+  labs(x = "Time", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  guides(prob = "none")
+```
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_week") |>
+  mutate(week = trunc((row_number() - 1) / 336)) |>
+  mutate(hhour_week = as.numeric(hhour_week)) |>
+  ggplot(aes(x = hhour_week, y = Demand, group = week)) +
+  geom_line(alpha = 0.2) +
+  scale_x_continuous(
+    breaks = seq(1, 336, by = 48),
+    labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+  ) +
+  labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  guides(prob = "none")
+```
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_week") |>
+  mutate(hhour_week = factor(as.numeric(hhour_week))) |>
+  ggplot(aes(x = hhour_week, y = Demand)) +
+  geom_point(size = 0.5, alpha = 0.2) +
+  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  scale_x_discrete(
+    breaks = seq(1, 336, by = 48),
+    labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+  ) +
+  labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  guides(prob = "none")
+```
+
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_year") |>
+  mutate(
+    year = year(Date),
+    hhour_year = as.numeric(hhour_year) / 48
+  ) |>
+  ggplot(aes(x = hhour_year, y = Demand, group = year)) +
+  geom_line(alpha = 0.4) +
+  labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("week_year") |>
+  mutate(
+    year = year(Date),
+  ) |>
+  ggplot(aes(x = week_year, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.1, height = 0, width = 0.2) +
+  labs(x = "Week", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  ylim(1900, 9350)
+```
+
+
+## Granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("week_year") |>
+  mutate(
+    year = year(Date),
+    week_year = factor(as.numeric(week_year))
+  ) |>
+  ggplot(aes(x = week_year, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.1, height = 0, width = 0.2) +
+  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  labs(x = "Week", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  guides(prob = "none") +
+  ylim(1900, 9350)
+```
+
+## Faceted granularity plots
+
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |>
+  create_gran("day_week") |>
+  mutate(hhour_day = as.numeric(hhour_day) / 2 - 0.5) |>
+  ggplot(aes(x = hhour_day, y = Demand, group = Date)) +
+  geom_line(alpha = 0.1) +
+  facet_grid(. ~ day_week) +
+  labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Faceted granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("day_week") |>
+  create_gran("month_year") |>
+  ggplot(aes(x = day_week, y = Demand)) +
+  geom_point(alpha = 0.1, size = 0.5) +
+  geom_hdr_boxplot(fill = "blue", prob = c(0.50, 0.95)) +
+  facet_grid(. ~ month_year) +
+  scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
+  guides(prob = "none") +
+  labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+
+## Faceted granularity plots
+
+```{r}
+vic_elec |>
+  prob_plot("month_year", "day_week", 
+            plot_type = "quantile",
+            response = "Demand",
+            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+  ) +
+  facet_grid(. ~ month_year) +
+  scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
+  guides(prob = "none") +
+  labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Faceted granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |> 
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
+  prob_plot("month_year","hhour_day", 
+            plot_type = "quantile", 
+            response = "Demand",
+            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+  ) +
+  labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Faceted granularity plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |> 
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
+  prob_plot("hhour_day", "month_year",
+            plot_type = "quantile", 
+            response = "Demand",
+            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+  ) +
+  labs(x = "Month", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+
+## Granularities
+
+**Available cyclic granularities for half-hourly data:**
+
+```{r}
+vic_elec |> search_gran()
+```
+
+::: {.tightlist}
+
+**Plot options:**
+
+  * raw data or distributional summary on y-axis
+  * granularity on x-axis
+  * optional granularity as facet
+
+:::
+
+## Single granularity plots
+
+* See distributional differences between categories.
+* Measure the effectiveness of a plot as the average Jenson-Shannon divergence between categories (or between neighbouring categories).
+* Significant differences can be measured using permutation tests or $\chi^2$ tests.
+* Users can be guided to view the most effective plots.
+
+## Faceted granularity plots
+
+* Omit combinations with empty or near-empty intersections ("clashes"). e.g., `day_year` $\times$ `month_year`
+* Prioritise within panel differences over between panel differences
+* Rank combinations using normalized Median Maximum Pairwise Distances.
+
+## Recommended faceted plots
+
+```{r}
+#| echo: TRUE
+harmonies <- vic_elec |> 
+  harmony(filter_out = c("hour","fortnight","quarter","semester"))
+vic_elec |> 
+  hakear::rank_harmonies(harmonies, response = Demand) |> 
+  filter(facet_levels < 20)
+```
+
+## Recommended faceted plots
+
+```{r}
+vic_elec |>
+  create_gran("hhour_day") |> 
+  mutate(hhour_day = factor(as.numeric(hhour_day))) |> 
+  prob_plot("month_year", "hhour_day", 
+            plot_type = "quantile", 
+            response = "Demand",
+            quantile_prob = c(0.05, 0.1, 0.25, 
+                              0.5, 0.75, 0.9, 0.95)
+  ) +
+  labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+
+## Recommended faceted plots
+
+```{r}
+vic_elec |>
+  prob_plot("day_week", "hhour_day", 
+            plot_type = "quantile", 
+            response = "Demand",
+            quantile_prob = c(0.05, 0.1, 0.25, 
+                              0.5, 0.75, 0.9, 0.95)
+  ) +
+  labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+## Recommended faceted plots
+
+```{r}
+vic_elec |>
+  prob_plot("month_year","day_week", 
+            plot_type = "quantile", 
+            response = "Demand",
+            quantile_prob = c(0.05, 0.1, 0.25, 
+                              0.5, 0.75, 0.9, 0.95)
+  ) +
+  scale_x_discrete(labels = c("M","T","W","T","F","S","S")) +
+  labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+```
+
+
+# MSTL
+
+::: {.callout-note icon="false"}
+# &nbsp;
+
+-   Kasun Bandara, Rob J Hyndman, Christoph Bergmeir (2022) MSTL: A Seasonal-Trend Decomposition Algorithm for Time Series with Multiple Seasonal Patterns. *International J Operational Research*, to appear. [robjhyndman.com/publications/mstl/](https://robjhyndman.com/publications/mstl/)
+- For multiple integer seasonal periods with additive components
+- Implemented in R packages `forecast` and `fable`.
+:::
+
+## MSTL {auto-animate=true}
+
+::: {layout-ncol="2"}
+```{r mstl_elec, echo=TRUE, eval=FALSE}
+velec |>
+  model(STL(Demand)) |>
+  components() |>
+  autoplot()
+```
+
+::: {.shiftup}
+```{r mstl_elec_out, ref.label="mstl_elec", echo=FALSE}
+#| fig-height: 7.5
+#| fig-width: 6
+```
+:::
+:::
+
+
+## MSTL {auto-animate=true}
+
+```{r}
+decomp <- velec |>
+  model(stl = STL(Demand)) |>
+  components() |>
+  tsbox::ts_xts()
+dy_graph <- list(
+  dygraph(decomp$stl_Demand, main = "", y = "Demand", group = "A", width = 990, height = 90) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp$stl_trend, main = "", y = "Trend", group = "A", width = 990, height = 90) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp$stl_season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 90) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp$stl_season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 90) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp$stl_season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 90) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp$stl_remainder, main = "", y = "Remainder", group = "A", width = 990, height = 105) |>
+    dyOptions(colors = "#c14b14") |>
+    dyRangeSelector(strokeColor = "", height = 15)
+)
+htmltools::browsable(htmltools::tagList(dy_graph))
+```
+
+
+## MSTL {auto-animate=true}
+
+$$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
+
+:::: {.columns}
+
+::: {.column width="69%"}
+
+::: tighttable
+
+```{r}
+#| results: asis
+tribble(
+  ~symbol, ~meaning,
+  "$y_t=$", "observation at time $t$",
+  "$T_t=$", "smooth trend component",
+  "$S_t^{(i)}=$", "seasonal component $i$",
+  "", "$i = 1,\\dots,I$",
+  "$R_t=$", "remainder component"
+) |>
+  xtable::xtable(align = c("crl")) |>
+  print(
+    type = "html",
+    include.colnames = FALSE, include.rownames = FALSE,
+    html.table.attributes = "border=0 margin=0"
+  )
+```
+
+:::
+
+:::
+
+::: {.column width="30%"}
+
+::: fragment
+::: {.callout-note .f1}
+
+## Estimation
+
+Components updated iteratively.
+
+:::
+:::
+
+:::
+
+::::
+
+## MSTL {auto-animate=true}
+
+```{r, eval=FALSE, echo=TRUE}
+#| code-line-numbers: "|1-4|6-7|8,18|9,17|10|11-14|15-16|19-21"
+
+# X: time series object
+# periods: vector of seasonal periods in increasing order
+# s.window: seasonal window values
+# iterate: number of  STL iterations
+
+seasonality <- matrix(0, nrow = nrow(X), ncol = length(periods))
+deseas <- X
+for (j in 1:iterate) {
+  for (i in 1:length(periods)) {
+    deseas <- deseas + seasonality[, i]
+    fit <- model(
+      STL(deseas ~ season(period = periods[i], window = s.window[i]))
+    ) |>
+      components()
+    seasonality[, i] <- fit$season
+    deseas <- deseas - seasonality[, i]
+  }
+}
+trend <- fit$trend
+remainder <- deseas - trend
+return(trend, remainder, seasonality)
+```
+
+## MSTL {auto-animate=true}
+
+### fable syntax
+
+``` r
+tsibble |>
+  model(STL(variable) ~ season(period = a, window = b) +
+                        season(period = c, window = d))
+```
+
+<br><br>
+
+### forecast syntax
+
+``` r
+vector |>
+  msts(seasonal.periods = c(a, c)) |>
+  mstl(s.window = c(b, d))
+```
+
+# STR
+
+::: {.callout-note icon="false"}
+# &nbsp;
+
+-   Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, to appear. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
+
+-   Implemented in R package `stR`.
+:::
+
+## STR {auto-animate=true}
+
+$$
+  y_{t} = T_{t} + \sum_{i=1}^{I} S^{(i)}_{t} + \sum_{p=1}^P \phi_{p,t} z_{t,p} + R_{t}
+$$
+
+:::: {.columns}
+
+::: {.column width="69%"}
+
+::: tighttable
+
+```{r}
+#| results: asis
+tribble(
+  ~symbol, ~meaning,
+  "$T_t=$", "smooth trend component",
+  "$S_t^{(i)}=$", "seasonal component $i$ (possibly&nbsp;complex topology)",
+  "$z_{p,t}=$", "covariate with coefficient $\\phi_{p,t}$ (possibly&nbsp;time-varying)",
+  "$R_t=$", "remainder component"
+) |>
+  xtable::xtable(align = c("crl")) |>
+  print(
+    type = "html",
+    sanitize.text.function = function(x) {
+      x
+    },
+    include.colnames = FALSE, include.rownames = FALSE,
+    html.table.attributes = "border=0 margin=0"
+  )
+```
+
+:::
+
+:::
+
+::: {.column width="30%"}
+
+::: fragment
+::: {.callout-note .f1}
+
+## Estimation
+
+Components estimated using penalized MLE
+
+:::
+:::
+
+:::
+
+::::
+
+## Smoothness via difference operators {auto-animate=true}
+
+Smooth trend obtained by requiring $\Delta_2 T_t \sim \text{NID}(0,\sigma_L^2)$
+
+  * $\Delta_2 = (1-B)^2$ where $B=$ backshift operator
+  * $\sigma_L$ controls smoothness
+
+. . .
+
+$$f(\bm{D}_\ell \bm{\ell}) \propto \exp\left\{-\frac{1}{2}\big\|\bm{D}_\ell \bm{\ell} / \sigma_L\big\|_{L_2}^2\right\}$$
+
+* $\bm{\ell} = \langle T_{t} \rangle_{t=1}^{n}$
+* $\bm{D}_\ell=$ 2nd difference operator matrix: $\bm{D}_\ell\bm{\ell} = \langle\Delta^2 T_{t}\rangle_{t=3}^n$
+
+## Smooth 2D seasonal surfaces {auto-animate=true}
+
+```{r, setup}
+options(rgl.useNULL = TRUE)
+library(rgl)
+```
+
+```{r, test-rgl, webgl=TRUE}
+# 2d seasonal surface
+knot <- cylinder3d(
+  center = cbind(1:14, 0, 0),
+  radius = 3,
+  closed = FALSE
+)
+shade3d(addNormals(subdivision3d(knot, depth = 2)), col = "#0063a7")
+x <- seq(1, 14, l = 500)
+lines3d(
+  x = x, y = 3 * sin(2 * pi * x / 7), z = 3 * cos(2 * pi * x / 7),
+  lwd = 4, color = "#c14b14"
+)
+axis3d(edge = "x", at = seq(1.5, 13.5, l = 14), labels = 1:14)
+text3d(x = 12, y = -4, z = -4, texts = "Day t")
+text3d(x = -4, y = 0, z = 0, texts = "season k")
+text3d(
+  x = 0, y = 3 * sin(2 * pi * (1:7) / 7), z = 3 * cos(2 * pi * (1:7) / 7),
+  texts = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+)
+text3d(
+  x = 1:14, y = 3.3 * sin(2 * pi * (1:14) / 7), z = 3.3 * cos(2 * pi * (1:14) / 7),
+  texts = rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 2),
+  col = "#c14b14", usePlotmath = TRUE
+)
+rglwidget(height = 360)
+```
+
+  * $m_i=$ number of "seasons" in $S^{(i)}_{t}$.
+  * $S^{(i)}_{k,t}=$ 2d season ($k=1,\dots,m_i;t=1,\dots,n$)
+  * $\sum\limits_k S^{(i)}_{k,t} = 0$ for each $t$.
+
+## Smooth 2D seasonal surfaces {auto-animate=true}
+
+* $\bm{S}^{(i)} = [S_{k,t}^{(i)}]$ the $i$th seasonal surface matrix
+* $\bm{s}_i = \text{vec}(\bm{S}_i)=$ the $i$th seasonal surface in vector form
+
+Smoothness in time $t$ direction:
+
+::: smallequations
+\begin{align*}
+  \bm{D}_{tt,i} \bm{s}_i  &= \langle \Delta^2_{t} \bm{S}^{(i)}_{k,t} \rangle \sim \text{NID}(\bm{0},\sigma_{i}^2 \bm{\Sigma}_{i})\\
+  f(\bm{s}_i) &\propto \exp\Big\{-\frac{1}{2}\big\|\ \bm{D}_{tt,i}\bm{s}_i / \sigma_i\big\|_{L_2}^2\Big\}
+\end{align*}
+:::
+
+Analogous difference matrices $\bm{D}_{kk,i}$ and $\bm{D}_{kt,i}$ ensure smoothness in season and time-season directions.
+
+## Gaussian remainders {auto-animate=true}
+
+* $R_{t} \sim \text{NID}(0,\sigma_R^2)$.
+* $\bm{y} = [y_1,\dots,y_n]'=$ vector of observations
+* $\bm{Z}=[z_{t,p}]=$ covariate matrix with coefficient $\bm{\Phi} = [\phi_{p,t}]$
+* $\bm{Q}_i=$  matrix that extracts $\langle S^{(i)}_{\kappa(t),t} \rangle_{t=1}^{n}$ from $\bm{s}_i$.
+* Residuals: $\bm{r} = \bm{y} - \sum_i\bm{Q}_i\bm{s}_i -\bm{\ell} - \bm{Z}\bm{\Phi}$ have density
+$$
+  f(\bm{r}) \propto \exp\Big\{-\frac{1}{2}\big\|\bm{r}/\sigma_R\big\|_{L_2}^2\Big\},
+$$
+
+## MLE for STR {.smaller auto-animate=true}
+
+Minimize wrt $\bm{\Phi}$, $\bm{\ell}$ and $\bm{s}_i$:
+
+::: smallequations
+\begin{align*}
+  -\log \mathcal{L} &= \frac{1}{2\sigma_R}
+  \Bigg\{
+    \Big\|
+      \bm{y}- \sum_{i=1}^I \bm{Q}_i\bm{s}_i - \bm{\ell} - \bm{Z}\bm{\Phi}
+    \Big\|_{L_2}^2  +
+    \lambda_\ell\Big\|\bm{D}_\ell \bm{\ell}\Big\|_{L_2}^2 \\
+  & \hspace*{1cm} + \sum_{i=1}^{I}\left(
+      \left\|\lambda_{tt,i} \bm{D}_{tt,i} \bm{s}_i \right\|_{L_2}^2 +
+      \left\|\lambda_{st,i} \bm{D}_{st,i} \bm{s}_i \right\|_{L_2}^2 +
+      \left\|\lambda_{ss,i} \bm{D}_{ss,i} \bm{s}_i \right\|_{L_2}^2
+    \right)
+  \Bigg\}
+\end{align*}
+:::
+
+:::: {.columns}
+
+::: {.column width="32%"}
+#### Equivalent to linear model
+
+$$\bm{y}_{+} = \bm{X}\bm{\beta} + \bm{\varepsilon}$$
+
+ * $\bm{y}_{+} = [\bm{y}',~ \bm{0}']'$
+ * $\bm{\varepsilon} \sim N(\bm{0},\sigma_R^2\bm{I})$
+:::
+
+::: {.column width="68%" .smaller}
+::: smallequations
+$\bm{X} =
+ \begin{bmatrix}
+\bm{Q}_1                      & \dots   & \bm{Q}_I                      & \bm{I}_n                  & \bm{Z} \\
+\lambda_{tt,1} \bm{D}_{tt,1}  & \dots   & 0                             & 0                         & 0 \\
+\lambda_{st,1} \bm{D}_{st,1}  & \dots   & 0                             & 0                         & 0 \\
+\lambda_{ss,1} \bm{D}_{ss,1}  & \dots   & 0                             & 0                         & 0 \\
+0                             & \ddots  & 0                             & 0                         & 0 \\
+0                             & \dots   & \lambda_{tt,I} \bm{D}_{tt,I}  & 0                         & 0 \\
+0                             & \dots   & \lambda_{st,I} \bm{D}_{st,I}  & 0                         & 0 \\
+0                             & \dots   & \lambda_{ss,I} \bm{D}_{ss,I}  & 0                         & 0 \\
+0                             & \dots   & 0                             & \lambda_\ell \bm{D}_{tt}  & 0
+\end{bmatrix}$
+:::
+:::
+::::
+
+## STR {auto-animate=true}
+
+::: {.smaller}
+
+Three seasonal components, quadratic temperature regressors
+
+:::
+
+```{r}
+# Fit basic STR model
+source("velec_str.R")
+```
+
+```{r}
+names(velec_str_x$output$predictors) <- names(velec_str_x$input$predictors)
+decomp <- as_tsibble(velec_str_x$input$data) |>
+  rename(
+    Demand = value,
+    DateTime = index
+  ) |>
+  mutate(
+    DateTime = velec_noly$DateTime,
+    Remainder = velec_str_x$output$random$data,
+    Season_year = velec_str_x$output$predictors$ASeason$data,
+    Season_week = velec_str_x$output$predictors$WSeason$data,
+    Season_day = velec_str_x$output$predictors$DSeason$data,
+    Temp = velec_str_x$output$predictors$Temp$data,
+    Tempsq = velec_str_x$output$predictors$Tempsq$data
+  ) |>
+  as_dable(response = "Demand", aliases = rlang::exprs(Demand = Season_year + Season_week + Season_day + Temp + Tempsq + Remainder), method = "STR")
+
+# Make xts for dygraph
+decomp.xts <- decomp |>
+  tsbox::ts_xts()
+
+dy_graph <- list(
+  dygraph(decomp.xts$Demand, main = "", y = "Demand", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Season_year, main = "", y = "Annual seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Season_week, main = "", y = "Weekly seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Season_day, main = "", y = "Daily seasonality", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Temp, main = "", y = "Temperature", group = "A", width = 990, height = 85) |>
+    dyAxis("x", axisLabelWidth = 0) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Remainder, main = "", y = "Remainder", group = "A", width = 990, height = 100) |>
+    dyOptions(colors = "#c14b14") |>
+    dyRangeSelector(strokeColor = "", height = 15)
+)
+htmltools::browsable(htmltools::tagList(dy_graph))
+```
+
+## STR outliers {auto-animate=true}
+
+```{r}
+# Identify outliers
+outliers <- decomp |>
+  as_tibble() |>
+  arrange(desc(abs(Remainder))) |>
+  head(50) |>
+  arrange(DateTime) |>
+  mutate(
+    Date = as_date(DateTime),
+    Time = format(as.POSIXct(DateTime), format = "%H:%M")
+  ) |>
+  select(DateTime, Date, Time, Temperature = Temp, Demand, Remainder)
+```
+
+```{r}
+dy_graph <- list(
+  dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120) |>
+    dyOptions(colors = "#c14b14"),
+  dygraph(decomp.xts$Remainder, main = "Remainder", group = "A", width = 990, height = 120) |>
+    dyOptions(colors = "#c14b14")
+)
+# Add outlier markers
+for (j in seq(2)) {
+  for (i in seq(NROW(outliers))) {
+    dy_graph[[j]] <- dy_graph[[j]] |>
+      dyShading(
+        from = outliers$DateTime[i] - 3600,
+        to = outliers$DateTime[i] + 3600,
+        color = "#c14b1477"
+      )
+  }
+}
+dy_graph[[2]] <- dy_graph[[2]] |>
+  dyRangeSelector(strokeColor = "")
+
+htmltools::browsable(htmltools::tagList(dy_graph))
+```
+
+<br>
+
+::: smalltable
+```{r}
+outliers |>
+  arrange(desc(abs(Remainder))) |>
+  select(-DateTime) |>
+  DT::datatable(fillContainer = FALSE, options = list(pageLength = 5)) |>
+  DT::formatRound(columns = c("Temperature", "Remainder", "Demand"), digits = 2)
+```
+
+:::
+
+
+# For more information
+
+**Slides:** [robjhyndman.com/seminars/compstat2022](https://robjhyndman.com/seminars/compstat2022)
+
+::: {.callout-note icon="false"}
+# Find me at:
+
+`r fa("home")` [robjhyndman.com](https://robjhyndman.com)<br> `r fa("twitter")` [\@robjhyndman](https://twitter.com/robjhyndman)<br> `r fa("github")` [\@robjhyndman](https://github.com/robjhyndman)<br> `r fa("envelope")` [rob.hyndman\@monash.edu](mailto:rob.hyndman@monash.edu)
+
+:::
