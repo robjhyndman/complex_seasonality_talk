@@ -35,10 +35,12 @@ div.callout-note.callout-style-default .callout-body {
 // headers
 .reveal h3 {
   color: #c14b14 !important;
+  font-size: 1em;
 }
 
 .reveal h4 {
   color: #c14b14 !important;
+  font-size: 0.8em;
 }
 
 // Remove ugly lines in tables
@@ -58,8 +60,8 @@ p.author {
 
 // Class for tighter itemized lists
 .tightlist ul li, ol li {
-  margin-top: 0.1em !important;
-  margin-bottom: 0.1em !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 // Class for tight tables
@@ -84,10 +86,14 @@ p.author {
   font-size: 50% !important;
 }
 
+.smallcode {
+  font-size: 60% !important;
+  display: inline-block;
+}
+
 #title-slide h1 {
   font-size: 90px;
 }
-
 
 .fa-ul {
   list-style-type: none!important;

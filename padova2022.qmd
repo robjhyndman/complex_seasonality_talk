@@ -33,7 +33,6 @@ editor_options:
 
 # Complex seasonality
 
-
 ## Complex seasonality {auto-animate=true}
 
 ```{r}
@@ -45,7 +44,7 @@ library(dygraphs)
 library(fpp3)
 library(gravitas)
 # Need corrected version of hakear
-#remotes::install_github("robjhyndman/hakear")
+# remotes::install_github("robjhyndman/hakear")
 library(hakear)
 library(gghdr)
 library(gt)
@@ -142,7 +141,6 @@ us_gasoline |>
   dyOptions(colors = "#c14b14")
 ```
 
-
 ## Complex seasonal topology {auto-animate=true}
 
 #### Example: hourly data
@@ -195,7 +193,6 @@ vic_elec |>
   scale_x_discrete(breaks = seq(0, 24, by = 4)) +
   labs(x = "Time", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
-
 
 ## Granularity plots
 
@@ -315,7 +312,6 @@ vic_elec |>
   ylim(1900, 9350)
 ```
 
-
 ## Granularity plots
 
 ```{r}
@@ -341,55 +337,33 @@ vic_elec |>
 
 ## Faceted granularity plots
 
-
 ```{r}
 #| label: gran10
 vic_elec |>
   create_gran("hhour_day") |>
-  create_gran("day_week") |>
+  create_gran("month_year") |>
   mutate(hhour_day = as.numeric(hhour_day) / 2 - 0.5) |>
   ggplot(aes(x = hhour_day, y = Demand, group = Date)) +
   geom_line(alpha = 0.1) +
-  facet_grid(. ~ day_week) +
+  facet_grid(. ~ month_year) +
+  scale_x_continuous(breaks = c(0, 12, 24), minor_breaks = NULL) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
 ## Faceted granularity plots
 
 ```{r}
-#| label: gran11
-vic_elec |>
-  create_gran("day_week") |>
-  create_gran("month_year") |>
-  ggplot(aes(x = day_week, y = Demand)) +
-  geom_point(alpha = 0.1, size = 0.5) +
-  geom_hdr_boxplot(
-    fill = "blue",
-    prob = c(0.50, 0.95),
-    width = 1.2,
-    position = position_dodge(width = 0)
-  ) +
-  facet_grid(. ~ month_year) +
-  scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
-  guides(prob = "none") +
-  labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
-```
-
-
-## Faceted granularity plots
-
-```{r}
 #| label: gran12
 vic_elec |>
-  prob_plot("month_year", "day_week",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+  prob_plot("month_year", "hhour_day",
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(0.025, 0.25, 0.5, 0.75, 0.975)
   ) +
   facet_grid(. ~ month_year) +
-  scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
+  scale_x_discrete(breaks = c(0, 24, 46), labels = c(0, 12, 24)) +
   guides(prob = "none") +
-  labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
+  labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
 ## Faceted granularity plots
@@ -399,10 +373,10 @@ vic_elec |>
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = factor(as.numeric(hhour_day))) |>
-  prob_plot("month_year","hhour_day",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+  prob_plot("month_year", "hhour_day",
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(0.025, 0.25, 0.5, 0.75, 0.975)
   ) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
@@ -410,30 +384,41 @@ vic_elec |>
 ## Faceted granularity plots
 
 ```{r}
+#| label: gran15
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = factor(as.numeric(hhour_day))) |>
   prob_plot("hhour_day", "month_year",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.025, 0.25, 0.5, 0.75,  0.975)
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(0.025, 0.25, 0.5, 0.75, 0.975)
   ) +
   labs(x = "Month", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
-
 ## Granularities
 
-**Available cyclic granularities for half-hourly data:**
+### Nested linear granularities
+
+[`hhour`, `hour`, `day`, `week`, `fortnight`, `quarter`, `semester`, `year`]{.smallcode}
+
+. . .
+
+### Available cyclic granularities for half-hourly data
 
 ```{r}
-#| label: search_gran
-vic_elec |> search_gran()
+#| label: granularities
+gnames <- paste(paste0("`", vic_elec |> search_gran(), "`"), collapse = ", ")
+gnames <- str_replace_all(gnames, "_", "/")
 ```
 
-::: {.tightlist}
+[`r gnames`]{.smallcode}
 
-**Plot options:**
+. . .
+
+### Plot options
+
+::: {.tightlist}
 
   * raw data or distributional summary on y-axis
   * granularity on x-axis
@@ -443,28 +428,263 @@ vic_elec |> search_gran()
 
 ## Single granularity plots
 
-* See distributional differences between categories.
-* Measure the effectiveness of a plot as the average Jenson-Shannon divergence between categories (or between neighbouring categories).
+* Compute Jensen-Shannon divergences between distributions $q_1$ and $q_2$:
+$$
+  JSD(q_1,q_2) = \textstyle\frac{1}{2}D(q_1,M) + \frac{1}{2}D(q_2,M),
+$$
+where $M = \frac{1}{2}(q_1+q_2)$ and $D(q_1,q_2)$ is KL divergence.
+
+* Measure effectiveness of a plot as maximum JSD for that plot (adjusted for number of levels).
 * Significant differences can be measured using permutation tests or $\chi^2$ tests.
 * Users can be guided to view the most effective plots.
 
+## Single granularity plots
+
+```{r}
+#| label: rank_granularities
+harmonies <- tibble(
+  facet_variable = TRUE * NA,
+  x_variable = search_gran(vic_elec, filter_out = c("hour", "fortnight", "quarter", "semester")),
+  facet_levels = 0,
+  x_levels = c(48, 48 * 7, 48 * 31, 48 * 365, 7, 31, 365, 5, 53, 12)
+) |>
+  filter(x_levels < 1000)
+vic_elec |>
+  rank_harmonies(harmonies, response = Demand, use_perm = FALSE) |>
+  select(x_variable, wpd) |>
+  mutate(
+    x_variable = str_replace(x_variable, "_", "/"),
+    x_variable = paste0("`", x_variable, "`")
+  ) |>
+  knitr::kable(col.names = c("x", "Normalized maximum JSD"), digits = 1)
+```
+
+::: aside
+
+* Omitted granularities `hour`, `fortnight`, `quarter`, `semester`
+* Omitted x variables with 1000+ levels*: `hhour/month`, `hhour/year`
+
+:::
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran1
+vic_elec |>
+  create_gran("hhour_week") |>
+  ggplot(aes(x = hhour_week, y = Demand)) +
+  geom_point(alpha = 0.1, size = 0.01) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(
+    breaks = seq(1, 336, by = 48),
+    labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+  ) +
+  labs(
+    x = "Day", y = "Demand (MWh)",
+    subtitle = "hhour/week",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran2
+vic_elec |>
+  create_gran("day_year") |>
+  ggplot(aes(x = day_year, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(breaks = seq(50, 365, by = 50)) +
+  labs(
+    x = "Day of year", y = "Demand (MWh)",
+    subtitle = "day/year",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran3
+vic_elec |>
+  create_gran("week_year") |>
+  ggplot(aes(x = week_year, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(breaks = seq(0, 53, by = 5)) +
+  labs(
+    x = "Week", y = "Demand (MWh)",
+    subtitle = "week/year",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran4
+vic_elec |>
+  create_gran("hhour_day") |>
+  mutate(
+    hhour_day = factor(as.numeric(hhour_day), labels = seq(0, 23.5, by = 0.5))
+  ) |>
+  ggplot(aes(x = hhour_day, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(breaks = seq(0, 24, by = 4)) +
+  labs(
+    x = "Time", y = "Demand (MWh)",
+    subtitle = "hhour/day",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran5
+vic_elec |>
+  create_gran("day_week") |>
+  ggplot(aes(x = day_week, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95)
+  ) +
+  labs(
+    x = "Day", y = "Demand (MWh)",
+    subtitle = "day/week",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran6
+vic_elec |>
+  create_gran("month_year") |>
+  ggplot(aes(x = month_year, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95)
+  ) +
+  labs(
+    x = "Month", y = "Demand (MWh)",
+    subtitle = "month/year",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran7
+vic_elec |>
+  create_gran("day_month") |>
+  ggplot(aes(x = day_month, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(breaks = seq(0, 31, by = 5)) +
+  labs(
+    x = "Day of month", y = "Demand (MWh)",
+    subtitle = "day/month",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
+## Single granularity plots
+
+```{r}
+#| label: bestgran8
+vic_elec |>
+  create_gran("week_month") |>
+  ggplot(aes(x = week_month, y = Demand)) +
+  geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95)
+  ) +
+  labs(
+    x = "Week of month", y = "Demand (MWh)",
+    subtitle = "week/month",
+    title = "Electricity demand: Victoria"
+  ) +
+  guides(prob = "none")
+```
+
 ## Faceted granularity plots
 
-* Omit combinations with empty or near-empty intersections ("clashes"). e.g., `day_year` $\times$ `month_year`
-* Prioritise within panel differences over between panel differences
-* Rank combinations using normalized Median Maximum Pairwise Distances.
+* Omit combinations with empty or near-empty intersections ("clashes"). e.g., `day/year` $\times$ `month/year`
+* Omit multi-step nested granularities. e.g,. `day/year`, `hhour/week`
+* Weight within panel differences higher than between panel differences (weight 2:1)
 
 ## Recommended faceted plots
 
+::: .tighttable 
+
+::: .smalltable
+
 ```{r}
 #| label: rank_harmonies
-#| echo: TRUE
 harmonies <- vic_elec |>
-  harmony(filter_out = c("hour","fortnight","quarter","semester"))
+  harmony(filter_out = c("hour", "fortnight", "quarter", "semester"))
 vic_elec |>
   rank_harmonies(harmonies, response = Demand) |>
-  filter(facet_levels < 20)
+  filter(facet_levels < 20) |> 
+  mutate(
+    x_variable = str_replace(x_variable, "_", "/"),
+    x_variable = paste0("`", x_variable, "`"),
+    facet_variable = str_replace(facet_variable, "_", "/"),
+    facet_variable = paste0("`", facet_variable, "`")
+  ) |>
+  knitr::kable(digits=1, col.names = c("facet", "x", "facet levels", "x levels", "Max JSD"))
 ```
+
+:::
+:::
+
+::: aside
+
+* Omitted facets with 20+ levels
+
+:::
+
 
 ## Recommended faceted plots
 
@@ -474,14 +694,15 @@ vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = factor(as.numeric(hhour_day))) |>
   prob_plot("month_year", "hhour_day",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25,
-                              0.5, 0.75, 0.9, 0.95)
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(
+      0.05, 0.1, 0.25,
+      0.5, 0.75, 0.9, 0.95
+    )
   ) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
-
 
 ## Recommended faceted plots
 
@@ -489,29 +710,43 @@ vic_elec |>
 #| label: gran21
 vic_elec |>
   prob_plot("day_week", "hhour_day",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25,
-                              0.5, 0.75, 0.9, 0.95)
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(
+      0.05, 0.1, 0.25,
+      0.5, 0.75, 0.9, 0.95
+    )
   ) +
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
-## Recommended faceted plots
+## Faceted granularity plots
 
 ```{r}
 #| label: gran22
 vic_elec |>
-  prob_plot("month_year","day_week",
-            plot_type = "quantile",
-            response = "Demand",
-            quantile_prob = c(0.05, 0.1, 0.25,
-                              0.5, 0.75, 0.9, 0.95)
+  prob_plot("month_year", "day_week",
+    plot_type = "quantile",
+    response = "Demand",
+    quantile_prob = c(
+      0.05, 0.1, 0.25,
+      0.5, 0.75, 0.9, 0.95
+    )
   ) +
-  scale_x_discrete(labels = c("M","T","W","T","F","S","S")) +
+  scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
   labs(x = "Day of week", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
+## References
+
+::: {.callout-note}
+
+# &nbsp;
+
+* Sayani Gupta, Rob J Hyndman, Dianne Cook and Antony Unwin (2022) Visualizing probability distributions across bivariate cyclic temporal granularities. *J Computational & Graphical Statistics*, **31**(1), 14-25.
+* Sayani Gupta, Rob J Hyndman, Dianne Cook (2021) Detecting distributional differences between temporal granularities for exploratory time series analysis. Working paper.
+
+:::
 
 # MSTL
 
@@ -540,7 +775,6 @@ velec |>
 ```
 :::
 :::
-
 
 ## MSTL {auto-animate=true}
 
@@ -572,7 +806,6 @@ dy_graph <- list(
 )
 htmltools::browsable(htmltools::tagList(dy_graph))
 ```
-
 
 ## MSTL {auto-animate=true}
 
@@ -981,7 +1214,6 @@ outliers |>
 ```
 
 :::
-
 
 # For more information
 
