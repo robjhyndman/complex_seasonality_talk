@@ -220,13 +220,15 @@ vic_elec |>
 #| label: gran4
 vic_elec |>
   create_gran("hhour_week") |>
-  mutate(week = trunc((row_number() - 1) / 336)) |>
-  mutate(hhour_week = as.numeric(hhour_week)) |>
+  mutate(
+    hhour_week = 1 + (as.numeric(hhour_week) - 48) %% 336,
+    week = trunc((row_number() - 1) / 336) + 1
+  ) |>
   ggplot(aes(x = hhour_week, y = Demand, group = week)) +
   geom_line(alpha = 0.2) +
   scale_x_continuous(
     breaks = seq(1, 336, by = 48),
-    labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
   ) +
   labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
   guides(prob = "none")
@@ -238,13 +240,15 @@ vic_elec |>
 #| label: gran5
 vic_elec |>
   create_gran("hhour_week") |>
-  mutate(hhour_week = factor(as.numeric(hhour_week))) |>
+  mutate(
+    hhour_week = factor(1 + (as.numeric(hhour_week) - 48) %% 336)
+  ) |>
   ggplot(aes(x = hhour_week, y = Demand)) +
   geom_point(size = 0.5, alpha = 0.2) +
   geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
   scale_x_discrete(
     breaks = seq(1, 336, by = 48),
-    labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
   ) +
   labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
   guides(prob = "none")
