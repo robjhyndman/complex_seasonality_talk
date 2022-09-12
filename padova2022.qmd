@@ -36,7 +36,9 @@ editor_options:
 
 ## Complex seasonality {auto-animate=true}
 
-```{r cache=FALSE}
+```{r}
+#| label: setup
+#| cache: false
 # Load packages needed later
 library(tidyverse)
 library(dygraphs)
@@ -85,6 +87,7 @@ div.callout-warning {
 ```
 
 ```{r}
+#| label: velec_dygraph
 #| fig-width: 3.4
 #| fig-height: 1.9
 velec |>
@@ -102,6 +105,7 @@ Note Jan 2014 -- bad bushfires
 ## Complex seasonality {auto-animate=true}
 
 ```{r}
+#| label: telec_dygraph
 #| fig-width: 3.4
 #| fig-height: 1.9
 telec <- read_csv("https://robjhyndman.com/data/turkey_elec.csv", col_names = FALSE) |>
@@ -125,6 +129,7 @@ Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by
 ## Complex seasonality {auto-animate=true}
 
 ```{r}
+#| label: gas_dygraph
 #| fig-width: 3.4
 #| fig-height: 1.9
 us_gasoline |>
@@ -166,6 +171,7 @@ us_gasoline |>
 ## Granularity plots
 
 ```{r}
+#| label: gran1
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = as.numeric(hhour_day) / 2 - 0.5) |>
@@ -178,6 +184,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran2
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(
@@ -193,6 +200,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran3
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(
@@ -209,6 +217,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran4
 vic_elec |>
   create_gran("hhour_week") |>
   mutate(week = trunc((row_number() - 1) / 336)) |>
@@ -226,6 +235,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran5
 vic_elec |>
   create_gran("hhour_week") |>
   mutate(hhour_week = factor(as.numeric(hhour_week))) |>
@@ -244,6 +254,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran7
 vic_elec |>
   create_gran("hhour_year") |>
   mutate(
@@ -258,6 +269,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran8
 vic_elec |>
   create_gran("week_year") |>
   mutate(
@@ -273,6 +285,7 @@ vic_elec |>
 ## Granularity plots
 
 ```{r}
+#| label: gran9
 vic_elec |>
   create_gran("week_year") |>
   mutate(
@@ -291,6 +304,7 @@ vic_elec |>
 
 
 ```{r}
+#| label: gran10
 vic_elec |>
   create_gran("hhour_day") |>
   create_gran("day_week") |>
@@ -304,6 +318,7 @@ vic_elec |>
 ## Faceted granularity plots
 
 ```{r}
+#| label: gran11
 vic_elec |>
   create_gran("day_week") |>
   create_gran("month_year") |>
@@ -320,6 +335,7 @@ vic_elec |>
 ## Faceted granularity plots
 
 ```{r}
+#| label: gran12
 vic_elec |>
   prob_plot("month_year", "day_week",
             plot_type = "quantile",
@@ -335,6 +351,7 @@ vic_elec |>
 ## Faceted granularity plots
 
 ```{r}
+#| label: gran14
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = factor(as.numeric(hhour_day))) |>
@@ -366,6 +383,7 @@ vic_elec |>
 **Available cyclic granularities for half-hourly data:**
 
 ```{r}
+#| label: search_gran
 vic_elec |> search_gran()
 ```
 
@@ -395,6 +413,7 @@ vic_elec |> search_gran()
 ## Recommended faceted plots
 
 ```{r}
+#| label: rank_harmonies
 #| echo: TRUE
 harmonies <- vic_elec |>
   harmony(filter_out = c("hour","fortnight","quarter","semester"))
@@ -406,6 +425,7 @@ vic_elec |>
 ## Recommended faceted plots
 
 ```{r}
+#| label: gran20
 vic_elec |>
   create_gran("hhour_day") |>
   mutate(hhour_day = factor(as.numeric(hhour_day))) |>
@@ -422,6 +442,7 @@ vic_elec |>
 ## Recommended faceted plots
 
 ```{r}
+#| label: gran21
 vic_elec |>
   prob_plot("day_week", "hhour_day",
             plot_type = "quantile",
@@ -435,6 +456,7 @@ vic_elec |>
 ## Recommended faceted plots
 
 ```{r}
+#| label: gran22
 vic_elec |>
   prob_plot("month_year","day_week",
             plot_type = "quantile",
@@ -479,6 +501,7 @@ velec |>
 ## MSTL {auto-animate=true}
 
 ```{r}
+#| label: mstl_dygraph
 decomp <- velec |>
   model(stl = STL(Demand)) |>
   components() |>
@@ -518,6 +541,7 @@ $$y_t = T_t + \sum_{i=1}^I S_t^{(i)} + R_t$$
 ::: tighttable
 
 ```{r}
+#| label: mstl_eq
 #| results: asis
 tribble(
   ~symbol, ~meaning,
@@ -626,6 +650,7 @@ $$
 ::: tighttable
 
 ```{r}
+#| label: str_eq
 #| results: asis
 tribble(
   ~symbol, ~meaning,
@@ -681,12 +706,14 @@ $$f(\bm{D}_\ell \bm{\ell}) \propto \exp\left\{-\frac{1}{2}\big\|\bm{D}_\ell \bm{
 
 ## Smooth 2D seasonal surfaces {auto-animate=true}
 
-```{r, setup}
+```{r}
+#| label: setup_rgl
 options(rgl.useNULL = TRUE)
 library(rgl)
 ```
 
 ```{r, test-rgl, webgl=TRUE}
+#| label: rgl_cylinder
 # 2d seasonal surface
 knot <- cylinder3d(
   center = cbind(1:14, 0, 0),
@@ -804,11 +831,13 @@ Three seasonal components, quadratic temperature regressors
 :::
 
 ```{r}
+#| label: setup_str
 # Fit basic STR model
 source("velec_str.R")
 ```
 
 ```{r}
+#| label: str_dygraph
 names(velec_str_x$output$predictors) <- names(velec_str_x$input$predictors)
 decomp <- as_tsibble(velec_str_x$input$data) |>
   rename(
@@ -856,6 +885,7 @@ htmltools::browsable(htmltools::tagList(dy_graph))
 ## STR outliers {auto-animate=true}
 
 ```{r}
+#| label: str_outliers
 # Identify outliers
 outliers <- decomp |>
   as_tibble() |>
@@ -870,6 +900,7 @@ outliers <- decomp |>
 ```
 
 ```{r}
+#| label: str_outliers_dygraph
 dy_graph <- list(
   dygraph(decomp.xts$Demand, main = "Demand", group = "A", width = 990, height = 120) |>
     dyOptions(colors = "#c14b14"),
@@ -897,6 +928,7 @@ htmltools::browsable(htmltools::tagList(dy_graph))
 
 ::: smalltable
 ```{r}
+#| label: outliers_table
 outliers |>
   arrange(desc(abs(Remainder))) |>
   select(-DateTime) |>
