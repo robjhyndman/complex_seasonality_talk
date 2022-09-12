@@ -208,7 +208,12 @@ vic_elec |>
   ) |>
   ggplot(aes(x = hhour_day, y = Demand)) +
   geom_jitter(size = 0.5, alpha = 0.2, height = 0, width = 0.2) +
-  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
   scale_x_discrete(breaks = seq(0, 24, by = 4)) +
   labs(x = "Time", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
   guides(prob = "none")
@@ -244,16 +249,41 @@ vic_elec |>
     hhour_week = factor(1 + (as.numeric(hhour_week) - 48) %% 336)
   ) |>
   ggplot(aes(x = hhour_week, y = Demand)) +
-  geom_point(size = 0.5, alpha = 0.2) +
-  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  geom_point(size = 0.02, alpha = 0.5) +
   scale_x_discrete(
     breaks = seq(1, 336, by = 48),
     labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
   ) +
   labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
-  guides(prob = "none")
+  guides(prob = "none") +
+  ylim(2600, 9350)
 ```
 
+## Granularity plots
+
+```{r}
+#| label: gran6
+vic_elec |>
+  create_gran("hhour_week") |>
+  mutate(
+    hhour_week = factor(1 + (as.numeric(hhour_week) - 48) %% 336)
+  ) |>
+  ggplot(aes(x = hhour_week, y = Demand)) +
+  geom_point(size = 0.02, alpha = 0.5) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
+  scale_x_discrete(
+    breaks = seq(1, 336, by = 48),
+    labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+  ) +
+  labs(x = "Day", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
+  guides(prob = "none") +
+  ylim(2600, 9350)
+```
 
 ## Granularity plots
 
@@ -298,7 +328,12 @@ vic_elec |>
   ) |>
   ggplot(aes(x = week_year, y = Demand)) +
   geom_jitter(size = 0.5, alpha = 0.1, height = 0, width = 0.2) +
-  geom_hdr_boxplot(fill = "blue", prob = c(.50, .95)) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(.50, .95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
   labs(x = "Week", y = "Demand (MWh)", title = "Electricity demand: Victoria") +
   guides(prob = "none") +
   ylim(1900, 9350)
@@ -328,7 +363,12 @@ vic_elec |>
   create_gran("month_year") |>
   ggplot(aes(x = day_week, y = Demand)) +
   geom_point(alpha = 0.1, size = 0.5) +
-  geom_hdr_boxplot(fill = "blue", prob = c(0.50, 0.95)) +
+  geom_hdr_boxplot(
+    fill = "blue",
+    prob = c(0.50, 0.95),
+    width = 1.2,
+    position = position_dodge(width = 0)
+  ) +
   facet_grid(. ~ month_year) +
   scale_x_discrete(labels = c("M", "T", "W", "T", "F", "S", "S")) +
   guides(prob = "none") +
