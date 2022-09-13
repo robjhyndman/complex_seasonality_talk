@@ -432,28 +432,28 @@ gnames <- str_replace_all(gnames, "_", "/")
 ```{r}
 #| label: interesting1
 p1 <- tibble(
-    x = rep(LETTERS[1:5], rep(100,5)),
-    y = rnorm(500)
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(LETTERS[1:5], rep(100, 5)),
+  y = rnorm(500)
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot()
 p2 <- tibble(
-    x = rep(LETTERS[1:5], rep(100,5)),
-    y = rnorm(500) + c(rep(0, 400), rep(2,100))
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(LETTERS[1:5], rep(100, 5)),
+  y = rnorm(500) + c(rep(0, 400), rep(2, 100))
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot()
 p3 <- tibble(
-    x = rep(LETTERS[1:5], rep(100,5)),
-    y = rnorm(500) + c(rep(0,100),rep(2,100),rep(0,200), rep(2,100))
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(LETTERS[1:5], rep(100, 5)),
+  y = rnorm(500) + c(rep(0, 100), rep(2, 100), rep(0, 200), rep(2, 100))
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot()
 p4 <- tibble(
-    x = rep(LETTERS[1:5], rep(100,5)),
-    y = rnorm(500) + c(rep(0,100),rep(1,100),rep(2,100), rep(3,100), rep(4,100))
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(LETTERS[1:5], rep(100, 5)),
+  y = rnorm(500) + c(rep(0, 100), rep(1, 100), rep(2, 100), rep(3, 100), rep(4, 100))
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot()
 (p1 | p2) / (p3 | p4)
 ```
@@ -705,35 +705,35 @@ vic_elec |>
 ```{r}
 #| label: interesting2
 p1 <- tibble(
-    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
-    z = rep(1:3, rep(200,3)),
-    y = rnorm(600)
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(rep(LETTERS[1:2], rep(100, 2)), 3),
+  z = rep(1:3, rep(200, 3)),
+  y = rnorm(600)
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot() +
   facet_grid(. ~ z)
 p2 <- tibble(
-    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
-    z = rep(1:3, rep(200,3)),
-    y = rnorm(600) + rep(c(0,2,4),rep(200,3))
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(rep(LETTERS[1:2], rep(100, 2)), 3),
+  z = rep(1:3, rep(200, 3)),
+  y = rnorm(600) + rep(c(0, 2, 4), rep(200, 3))
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot() +
   facet_grid(. ~ z)
 p3 <- tibble(
-    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
-    z = rep(1:3, rep(200,3)),
-    y = rnorm(600) + rep(rep(c(0,2),rep(100,2)),3)
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(rep(LETTERS[1:2], rep(100, 2)), 3),
+  z = rep(1:3, rep(200, 3)),
+  y = rnorm(600) + rep(rep(c(0, 2), rep(100, 2)), 3)
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot() +
   facet_grid(. ~ z)
 p4 <- tibble(
-    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
-    z = rep(1:3, rep(200,3)),
-    y = rnorm(600) + rep(0:5, rep(100,6))
-  ) |>
-  ggplot(aes(x=x, y=y)) +
+  x = rep(rep(LETTERS[1:2], rep(100, 2)), 3),
+  z = rep(1:3, rep(200, 3)),
+  y = rnorm(600) + rep(0:5, rep(100, 6))
+) |>
+  ggplot(aes(x = x, y = y)) +
   geom_boxplot() +
   facet_grid(. ~ z)
 (p1 | p2) / (p3 | p4)
@@ -752,7 +752,7 @@ p4 <- tibble(
 
 ## Recommended faceted plots
 
-::: .tighttable 
+::: .tighttable
 
 ::: .smalltable
 
@@ -762,14 +762,14 @@ harmonies <- vic_elec |>
   harmony(filter_out = c("hour", "fortnight", "quarter", "semester"))
 vic_elec |>
   rank_harmonies(harmonies, response = Demand) |>
-  filter(facet_levels < 20) |> 
+  filter(facet_levels < 20) |>
   mutate(
     x_variable = str_replace(x_variable, "_", "/"),
     x_variable = paste0("`", x_variable, "`"),
     facet_variable = str_replace(facet_variable, "_", "/"),
     facet_variable = paste0("`", facet_variable, "`")
   ) |>
-  knitr::kable(digits=1, col.names = c("facet", "x", "facet levels", "x levels", "Max JSD"))
+  knitr::kable(digits = 1, col.names = c("facet", "x", "facet levels", "x levels", "Max JSD"))
 ```
 
 :::
@@ -835,6 +835,33 @@ vic_elec |>
 * Sayani Gupta, Rob J Hyndman, Dianne Cook and Antony Unwin (2022) Visualizing probability distributions across bivariate cyclic temporal granularities. *J Computational & Graphical Statistics*, **31**(1), 14-25.
 * Sayani Gupta, Rob J Hyndman, Dianne Cook (2022) Detecting distributional differences between temporal granularities for exploratory time series analysis. Work in progress.
 
+:::
+
+# Time series decomposition for complex seasonalities
+
+## Time series decomposition for complex seasonalities
+
+::: {style="font-size: 80% !important;"}
+
+::: tightlist
+
+`r fa_list(c("fa-solid fa-wave-square" = "Multiple seasonal periods, not necessarily nested", "fa-solid fa-wave-square" = "Non-integer seasonality", "fa-solid fa-wave-square" = "Irregular seasonal topography", "fa-solid fa-wave-square" = "Seasonality that depends on covariates", "fa-solid fa-wave-square" = "Complex seasonal topology"), incremental=FALSE)`
+
+:::
+
+:::
+
+. . .
+
+> No existing decomposition method handles all of these.
+
+. . .
+
+::: {.callout-note icon="false"}
+# Two solutions
+
+1.  MSTL: For multiple integer seasonal periods.
+2.  STR: For all types of complex seasonality.
 :::
 
 # MSTL
@@ -998,7 +1025,7 @@ vector |>
 ::: {.callout-note icon="false"}
 # &nbsp;
 
--   Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, to appear. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
+-   Alex Dokumentov and Rob J Hyndman (2022) STR: Seasonal-Trend decomposition using Regression. *INFORMS Journal on Data Science*, <b>1</b>(1), 50-62. [robjhyndman.com/publications/str/](https://robjhyndman.com/publications/str/)
 
 -   Implemented in R package `stR`.
 :::
@@ -1104,7 +1131,7 @@ text3d(
   texts = rep(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), 2),
   col = "#c14b14", usePlotmath = TRUE
 )
-rglwidget(height = 360)
+rglwidget(height = 360, width = 800)
 ```
 
   * $m_i=$ number of "seasons" in $S^{(i)}_{t}$.
@@ -1303,6 +1330,32 @@ outliers |>
 ```
 
 :::
+
+## Thanks to my collaborators
+
+```{r}
+#| label: pixtures
+pixture::pixgallery(
+  path = paste0("figs/", c(
+    "dicook.png",
+    "sayani.jpg",
+    "antony.jpg",
+    "christoph.jpg",
+    "kasun.jpg",
+    "alex.jpg"
+  )),
+  caption = c(
+    "Di Cook",
+    "Sayani Gupta",
+    "Antony Unwin",
+    "Christoph Bergmeir",
+    "Kasun Bandara",
+    "Alex Dokumentov"
+  ),
+  dim = "320px",
+  height = "700px"
+)
+```
 
 # For more information
 
