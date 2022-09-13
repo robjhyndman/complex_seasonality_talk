@@ -17,6 +17,7 @@ $presentation-heading-color: #0063a7 !default;
   padding: 20px;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
+  border-radius: 10px;
 }
 
 // Callout backgrounds
@@ -66,8 +67,10 @@ p.author {
 
 // Class for tight tables
 .tighttable th, td {
-  padding: 2.5px !important;
-  margin: 1px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .shiftup img {
@@ -99,4 +102,11 @@ p.author {
   list-style-type: none!important;
   margin-left: var(--fa-li-margin, 2.5em)!important;
   padding-left: 0!important;
+}
+
+.reveal .slide aside, .reveal .slide div.aside {
+  position: absolute;
+  bottom: -50px;
+  font-size: 0.7em;
+  color: #808080;
 }
