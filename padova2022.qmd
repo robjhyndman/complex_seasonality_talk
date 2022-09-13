@@ -49,6 +49,7 @@ library(hakear)
 library(gghdr)
 library(gt)
 library(fontawesome)
+library(patchwork)
 
 fa_list <- function(x, incremental = FALSE) {
   icons <- names(x)
@@ -335,7 +336,7 @@ vic_elec |>
   ylim(1900, 9350)
 ```
 
-## Faceted granularity plots
+## Faceted granularity plots {auto-animate="true"}
 
 ```{r}
 #| label: gran10
@@ -426,6 +427,37 @@ gnames <- str_replace_all(gnames, "_", "/")
 
 :::
 
+## What is an interesting plot?
+
+```{r}
+#| label: interesting1
+p1 <- tibble(
+    x = rep(LETTERS[1:5], rep(100,5)),
+    y = rnorm(500)
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot()
+p2 <- tibble(
+    x = rep(LETTERS[1:5], rep(100,5)),
+    y = rnorm(500) + c(rep(0, 400), rep(2,100))
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot()
+p3 <- tibble(
+    x = rep(LETTERS[1:5], rep(100,5)),
+    y = rnorm(500) + c(rep(0,100),rep(2,100),rep(0,200), rep(2,100))
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot()
+p4 <- tibble(
+    x = rep(LETTERS[1:5], rep(100,5)),
+    y = rnorm(500) + c(rep(0,100),rep(1,100),rep(2,100), rep(3,100), rep(4,100))
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot()
+(p1 | p2) / (p3 | p4)
+```
+
 ## Single granularity plots
 
 * Compute Jensen-Shannon divergences between distributions $q_1$ and $q_2$:
@@ -435,8 +467,29 @@ $$
 where $M = \frac{1}{2}(q_1+q_2)$ and $D(q_1,q_2)$ is KL divergence.
 
 * Measure effectiveness of a plot as maximum JSD for that plot (adjusted for number of levels).
-* Significant differences can be measured using permutation tests or $\chi^2$ tests.
 * Users can be guided to view the most effective plots.
+
+## Normalization of maximum JSD
+
+The distribution of max JSD depends on number of levels $n$.
+
+### Permutation approach (for small $n$)
+
+::: tightlist
+
+* Compute max JSD after permuting the levels.
+* Normalize by mean and standard deviation of permuted max JSD values
+
+:::
+
+### Modelling approach (for large $n$)
+
+::: tightlist
+
+* Fit a Gumbel GLM to max JSD from simulated N(0,1) data with $n$ as covariate.
+* Standardize original data by $\Phi^{-1}()$, compute max JSD, and normalize by mean and standard deviation from model.
+
+:::
 
 ## Single granularity plots
 
@@ -564,7 +617,6 @@ vic_elec |>
   guides(prob = "none")
 ```
 
-
 ## Single granularity plots
 
 ```{r}
@@ -648,11 +700,55 @@ vic_elec |>
   guides(prob = "none")
 ```
 
+## What is an interesting faceted plot?
+
+```{r}
+#| label: interesting2
+p1 <- tibble(
+    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
+    z = rep(1:3, rep(200,3)),
+    y = rnorm(600)
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot() +
+  facet_grid(. ~ z)
+p2 <- tibble(
+    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
+    z = rep(1:3, rep(200,3)),
+    y = rnorm(600) + rep(c(0,2,4),rep(200,3))
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot() +
+  facet_grid(. ~ z)
+p3 <- tibble(
+    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
+    z = rep(1:3, rep(200,3)),
+    y = rnorm(600) + rep(rep(c(0,2),rep(100,2)),3)
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot() +
+  facet_grid(. ~ z)
+p4 <- tibble(
+    x = rep(rep(LETTERS[1:2], rep(100,2)),3),
+    z = rep(1:3, rep(200,3)),
+    y = rnorm(600) + rep(0:5, rep(100,6))
+  ) |>
+  ggplot(aes(x=x, y=y)) +
+  geom_boxplot() +
+  facet_grid(. ~ z)
+(p1 | p2) / (p3 | p4)
+```
+
 ## Faceted granularity plots
+
+* Measure effectiveness of a plot as maximum JSD for that plot
+
+  * weight within panel differences higher than between panel differences (weight 2:1)
+  * normalization to adjust for number of levels and panels
 
 * Omit combinations with empty or near-empty intersections ("clashes"). e.g., `day/year` $\times$ `month/year`
 * Omit multi-step nested granularities. e.g,. `day/year`, `hhour/week`
-* Weight within panel differences higher than between panel differences (weight 2:1)
+* Omit facets with 20+ levels
 
 ## Recommended faceted plots
 
@@ -679,14 +775,7 @@ vic_elec |>
 :::
 :::
 
-::: aside
-
-* Omitted facets with 20+ levels
-
-:::
-
-
-## Recommended faceted plots
+## Faceted granularity plots
 
 ```{r}
 #| label: gran20
@@ -704,7 +793,7 @@ vic_elec |>
   labs(x = "Hour of day", y = "Demand (MWh)", title = "Electricity demand: Victoria")
 ```
 
-## Recommended faceted plots
+## Faceted granularity plots
 
 ```{r}
 #| label: gran21
@@ -744,7 +833,7 @@ vic_elec |>
 # &nbsp;
 
 * Sayani Gupta, Rob J Hyndman, Dianne Cook and Antony Unwin (2022) Visualizing probability distributions across bivariate cyclic temporal granularities. *J Computational & Graphical Statistics*, **31**(1), 14-25.
-* Sayani Gupta, Rob J Hyndman, Dianne Cook (2021) Detecting distributional differences between temporal granularities for exploratory time series analysis. Working paper.
+* Sayani Gupta, Rob J Hyndman, Dianne Cook (2022) Detecting distributional differences between temporal granularities for exploratory time series analysis. Work in progress.
 
 :::
 
