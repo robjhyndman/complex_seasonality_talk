@@ -31,9 +31,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-# Complex seasonality
+# Complex seasonalities
 
-## Complex seasonality {auto-animate=true}
+## Complex seasonalities {auto-animate=true}
 
 ```{r}
 #| label: setup
@@ -102,7 +102,7 @@ velec |>
 Note Jan 2014 -- bad bushfires
 :::
 
-## Complex seasonality {auto-animate=true}
+## Complex seasonalities {auto-animate=true}
 
 ```{r}
 #| label: telec_dygraph
@@ -126,7 +126,7 @@ telec |>
 Two down spikes are Eid ul Fitr (End of Ramadan) followed a month or so later by Eid al-Adha (Festival of Sacrifice). In 2006, Eid al-Adha happens twice in same Gregorian year.
 :::
 
-## Complex seasonality {auto-animate=true}
+## Complex seasonalities {auto-animate=true}
 
 ```{r}
 #| label: gas_dygraph
@@ -148,7 +148,7 @@ us_gasoline |>
 
 ![](figs/topology.png)
 
-## Complex seasonality {auto-animate=true}
+## Complex seasonalities {auto-animate=true}
 
 ::: tightlist
 
