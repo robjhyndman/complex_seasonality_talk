@@ -1331,6 +1331,14 @@ outliers |>
 
 :::
 
+## R packages
+
+::: {.v-center-container}
+
+<a href="https://cran.r-project.org/package=gravitas"><img src="https://github.com/Sayani07/gravitas/raw/master/man/figures/logo.png" width=200></a><a href="https://github.com/Sayani07/hakear"><img src = "https://robjhyndman.com/software/stickers/hakear.png" width=200></a><a href="https://pkg.robjhyndman.com/forecast"><img src = "https://pkg.robjhyndman.com/forecast/reference/figures/logo.png" width=200></a><a href="https://feasts.tidyverts.org"><img src = "http://feasts.tidyverts.org/reference/figures/logo.png" width=200></a><a href="https://cran.r-project.org/package=stR"><img src = "https://robjhyndman.com/software/stickers/stR.png" width=200></a>
+
+:::
+
 ## Thanks to my collaborators
 
 ```{r}
@@ -1359,7 +1367,7 @@ pixture::pixgallery(
 
 # For more information
 
-**Slides:** [robjhyndman.com/seminars/padova2022](https://robjhyndman.com/seminars/padova2022)
+**Slides:** [robjhyndman.com/seminars/padova2022.html](https://robjhyndman.com/seminars/padova2022.html)
 
 ::: {.callout-note icon="false"}
 # Find me at:
