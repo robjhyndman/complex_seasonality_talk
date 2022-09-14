@@ -27,10 +27,10 @@
     },
     "DT": {
       "Package": "DT",
-      "Version": "0.24",
+      "Version": "0.25",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c814c35b0bc58613b4632c8acaf80b04",
+      "Hash": "d35337fd4278be35c50d7eeeec439f68",
       "Requirements": [
         "crosstalk",
         "htmltools",
@@ -1376,6 +1376,22 @@
         "vctrs"
       ]
     },
+    "pixture": {
+      "Package": "pixture",
+      "Version": "0.0.2.2001",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "pixture",
+      "RemoteUsername": "royfrancis",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "66815a62e327b79cc838a25a9aabfd1db427c527",
+      "Hash": "e4aed1011fb0cc59aa5826f1d64d7b66",
+      "Requirements": [
+        "htmlwidgets",
+        "shiny"
+      ]
+    },
     "pkgconfig": {
       "Package": "pkgconfig",
       "Version": "2.0.3",
@@ -2082,10 +2098,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.32",
+      "Version": "0.33",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "0498af3034691dde715dcd86198efe75",
+      "Hash": "1a666f915cd65072f4ccf5b2888d5d39",
       "Requirements": []
     },
     "xml2": {

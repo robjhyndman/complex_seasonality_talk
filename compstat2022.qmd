@@ -248,30 +248,27 @@ Components updated iteratively.
 
 ## MSTL {auto-animate=true}
 
-```{r, eval=FALSE, echo=TRUE}
-#| code-line-numbers: "|1-4|6-7|8,18|9,17|10|11-14|15-16|19-21"
 
-# X: time series object
+```{r, eval=FALSE, echo=TRUE}
+#| code-line-numbers: "|1-4|6-7|8,15|9,14|10-13|16-17|18"
+# y: time series as vector
 # periods: vector of seasonal periods in increasing order
-# s.window: seasonal window values
+# swindow: seasonal window values
 # iterate: number of  STL iterations
 
-seasonality <- matrix(0, nrow = nrow(X), ncol = length(periods))
-deseas <- X
+seasonality <- matrix(0, nrow = length(y), ncol = length(periods))
+deseas <- y
 for (j in 1:iterate) {
   for (i in 1:length(periods)) {
     deseas <- deseas + seasonality[, i]
-    fit <- model(
-        STL(deseas ~ season(period = periods[i], window = s.window[i]))
-      ) |>
-      components()
+    fit <- stl(ts(deseas, frequency = periods[i]), s.window = swindow[i])
     seasonality[, i] <- fit$season
     deseas <- deseas - seasonality[, i]
   }
 }
 trend <- fit$trend
 remainder <- deseas - trend
-return(trend, remainder, seasonality)
+return(trend, seasonality, remainder)
 ```
 
 ## MSTL {auto-animate=true}
@@ -280,8 +277,8 @@ return(trend, remainder, seasonality)
 
 ``` r
 tsibble |>
-  model(STL(variable) ~ season(period = a, window = b) +
-                        season(period = c, window = d))
+  model(STL(variable ~ season(period = a, window = b) +
+                       season(period = c, window = d)))
 ```
 
 <br><br>
