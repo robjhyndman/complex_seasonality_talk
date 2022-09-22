@@ -1361,6 +1361,10 @@ pixture::pixgallery(
 )
 ```
 
+## OTexts.com/fppit
+
+![](figs/fppit.png)
+
 # For more information
 
 **Slides:** [robjhyndman.com/seminars/padova2022.html](https://robjhyndman.com/seminars/padova2022.html)
